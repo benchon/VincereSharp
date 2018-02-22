@@ -25,8 +25,8 @@ namespace WebTest.Controllers
         public async Task<IActionResult> Index([FromQuery(Name = "code")] string code)
         {
 
-            var token  = HttpContext.Session.GetString("VincereToken");
-            if (!string.IsNullOrWhiteSpace(token))
+            var accessToken = HttpContext.Session.GetString("AccessToken");
+            if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 Response.Redirect("/Contacts");
             }
@@ -35,13 +35,18 @@ namespace WebTest.Controllers
             if (!string.IsNullOrWhiteSpace(code))
             {
                 var tokenResponse = await vClient.GetAuthCode(code);
-                HttpContext.Session.SetString("VincereToken", tokenResponse.AccessToken);
+                HttpContext.Session.SetString("AccessToken", tokenResponse.AccessToken);
+                HttpContext.Session.SetString("RefresherToken", tokenResponse.RefreshToken);
+                HttpContext.Session.SetString("IdToken", tokenResponse.IdToken);
                 Response.Redirect("/Contacts");
             }
-            
-            var returnUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
-            returnUrl = "http://app.benchon.com.au";// HttpContext.Request.GetDisplayUrl();
 
+            var returnUrl = VincereConfig.RedirectUrl;
+            if (string.IsNullOrWhiteSpace(returnUrl))
+            {
+                returnUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
+                returnUrl = HttpContext.Request.GetDisplayUrl();
+            }
             ViewData["LoginUrl"] = vClient.GetLoginUrl(returnUrl);
 
             return View();

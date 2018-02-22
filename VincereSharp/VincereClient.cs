@@ -11,45 +11,26 @@ namespace VincereSharp
     {
         private string _clientId;
         private string _apiKey;
+        private string _domainId;
+
         private bool _useTest = false;
         private bool _isLoggedin = false;
 
-        private string _token;
-        public string Token
+        public string AccessToken { get; set; }
+        public string RefresherToken { get; set; }
+        public string IdToken { get; set; }
+
+        private string GetBaseUrl(string domain = "id")
         {
-            get { return _token; }
-            set { _token = value; }
+            return _useTest ? $"https://{ domain }.vinceredev.com" : $"https://{ domain }.vincere.io";
         }
 
-        public VincereClient(string clientId, string apiToken = "", bool useTest = false)
+        public VincereClient(string clientId, string apiKey = "", string domainId = "id", bool useTest = false)
         {
             _useTest = useTest;
             _clientId = clientId;
-            _apiKey = apiToken;
-        }
-
-        private string BaseUrl => _useTest ? "https://id.vinceredev.com" : "https://id.vincere.io";
-
-        public string GetLoginUrl(string redirectUrl)
-        {
-            return GetLoginUrl(_clientId, redirectUrl);
-        }
-        public string GetLoginUrl(string clientId, string redirectUrl, string state = null)
-        {
-            var url = new StringBuilder("");
-            url.Append(BaseUrl)
-               .Append("/oauth2/authorize?client_id=")
-               .Append(clientId)
-               .Append("&redirect_uri=")
-               .Append(redirectUrl)
-               .Append("&response_type=code");
-
-            if (!string.IsNullOrWhiteSpace(state))
-            {
-                url.Append("&state=")
-                   .Append(state);
-            }
-            return url.ToString();
+            _apiKey = apiKey;
+            _domainId = domainId;
         }
 
         private HttpClient _client;
@@ -59,18 +40,43 @@ namespace VincereSharp
             {
                 return _client ?? (_client = new HttpClient
                 {
-                    BaseAddress = new Uri(BaseUrl),
+                    BaseAddress = new Uri(GetBaseUrl(_domainId)),
                     DefaultRequestHeaders =
                                 {
-                                    { "id-token", Token },
-                                    { "x-api-key", "_apiVersion" }
+                                    { "id-token", AccessToken },
+                                    { "x-api-key", _apiKey }
                                 }
                 });
             }
         }
+
+        #region "Auth"
+        public string GetLoginUrl(string redirectUrl)
+        {
+            return GetLoginUrl(_clientId, redirectUrl);
+        }
+
+        public string GetLoginUrl(string clientId, string redirectUrl, string state = null)
+        {
+            var url = new StringBuilder("");
+            url.Append(GetBaseUrl())
+                .Append("/oauth2/authorize?client_id=")
+                .Append(clientId)
+                .Append("&redirect_uri=")
+                .Append(redirectUrl)
+                .Append("&response_type=code");
+
+            if (!string.IsNullOrWhiteSpace(state))
+            {
+                url.Append("&state=")
+                    .Append(state);
+            }
+            return url.ToString();
+        }
+
         public async Task<TokenResponse> GetAuthCode(string code)
         {
-            var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
+            var client = new HttpClient { BaseAddress = new Uri(GetBaseUrl()) };
             var values = new Dictionary<string, string>()
             {
                 {"client_id", _clientId},
@@ -94,7 +100,7 @@ namespace VincereSharp
 
         public async Task<TokenResponse> GetRefreshToken(string refreshToken)
         {
-            var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
+            var client = new HttpClient { BaseAddress = new Uri(GetBaseUrl()) };
             var values = new Dictionary<string, string>()
             {
                 {"client_id", _clientId},
@@ -115,6 +121,7 @@ namespace VincereSharp
             var json = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<TokenResponse>(json);
         }
+        #endregion
 
         #region "Contact"
 

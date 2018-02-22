@@ -20,16 +20,17 @@ namespace WebTest.Controllers
         // GET: Contacts
         public async Task<ActionResult> Index()
         {
-            var token = HttpContext.Session.GetString("VincereToken");
+            var accessToken = HttpContext.Session.GetString("AccessToken");
 
-            if (!string.IsNullOrWhiteSpace(token))
+            if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 Response.Redirect("~/");
             }
 
             var client = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey)
             {
-                Token = token
+                AccessToken = accessToken,
+
             };
 
             var model = await client.GetContactsAsync();
