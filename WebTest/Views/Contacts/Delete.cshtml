@@ -1,0 +1,260 @@
+﻿@model VincereSharp.Contact
+
+@{
+    ViewData["Title"] = "View";
+}
+
+<h2>View</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Contact</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.AdminTimeTemp)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.AdminTimeTemp)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CandidateSourceId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CandidateSourceId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CompanyId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CompanyId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CreatorId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CreatorId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CustomerProbability)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CustomerProbability)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.DateOfBirth)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DateOfBirth)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Department)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Department)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ExternalId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ExternalId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Facebook)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Facebook)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.FirstName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.FirstNameKana)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.FirstNameKana)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.GenderTitle)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.GenderTitle)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.HomePhone)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.HomePhone)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Id)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.IsAssistant)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.IsAssistant)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.JobLevel)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.JobLevel)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.JobLevelHierarchy)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.JobLevelHierarchy)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.JobTitle)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.JobTitle)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.LastName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.LastNameKana)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.LastNameKana)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Linkedin)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Linkedin)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.MiddleName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.MiddleName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.MiddleNameKana)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.MiddleNameKana)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.MobilePhone)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.MobilePhone)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Note)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Note)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.PreferredContactMethod)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PreferredContactMethod)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.PersonalEmail)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PersonalEmail)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.PreferredTimeFrom)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PreferredTimeFrom)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.PreferredTimeTo)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PreferredTimeTo)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Phone)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Phone)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.RegistrationDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.RegistrationDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ReportToContactId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ReportToContactId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Skills)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Skills)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Skype)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Skype)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.StartDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.StartDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.SwitchboardPhone)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.SwitchboardPhone)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.SwitchboardPhoneExt)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.SwitchboardPhoneExt)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Twitter)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Twitter)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Xing)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Xing)
+        </dd>
+    </dl>
+    
+    <form asp-action="View">
+        <input type="submit" value="Delete" class="btn btn-default" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
+</div>
