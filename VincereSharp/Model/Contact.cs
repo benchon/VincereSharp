@@ -1,10 +1,4 @@
-﻿// To parse this JSON data, add NuGet 'Newtonsoft.Json' then do:
-//
-//    using VincereSharp;
-//
-//    var contact = Contact.FromJson(jsonString);
-
-namespace VincereSharp
+﻿namespace VincereSharp
 {
     using System;
     using System.Collections.Generic;
@@ -13,26 +7,29 @@ namespace VincereSharp
 
     public partial class Contact
     {
+        [JsonProperty("id")]
+        public long Id { get; set; }
+
         [JsonProperty("admin_time_temp")]
         public bool AdminTimeTemp { get; set; }
 
         [JsonProperty("candidate_source_id")]
-        public long CandidateSourceId { get; set; }
+        public long? CandidateSourceId { get; set; }
 
         [JsonProperty("company_id")]
-        public long CompanyId { get; set; }
+        public long? CompanyId { get; set; }
 
         [JsonProperty("contact_owners")]
         public string[] ContactOwners { get; set; }
 
         [JsonProperty("creator_id")]
-        public long CreatorId { get; set; }
+        public long? CreatorId { get; set; }
 
         [JsonProperty("customer_probability")]
-        public long CustomerProbability { get; set; }
+        public long? CustomerProbability { get; set; }
 
         [JsonProperty("date_of_birth")]
-        public System.DateTimeOffset DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         [JsonProperty("department")]
         public string Department { get; set; }
@@ -58,9 +55,6 @@ namespace VincereSharp
         [JsonProperty("home_phone")]
         public string HomePhone { get; set; }
 
-        [JsonProperty("id")]
-        public long Id { get; set; }
-
         [JsonProperty("is_assistant")]
         public bool IsAssistant { get; set; }
 
@@ -68,7 +62,7 @@ namespace VincereSharp
         public string JobLevel { get; set; }
 
         [JsonProperty("job_level_hierarchy")]
-        public long JobLevelHierarchy { get; set; }
+        public long? JobLevelHierarchy { get; set; }
 
         [JsonProperty("job_title")]
         public string JobTitle { get; set; }
@@ -110,10 +104,10 @@ namespace VincereSharp
         public string Phone { get; set; }
 
         [JsonProperty("registration_date")]
-        public System.DateTimeOffset RegistrationDate { get; set; }
+        public DateTime? RegistrationDate { get; set; }
 
         [JsonProperty("report_to_contact_id")]
-        public long ReportToContactId { get; set; }
+        public long? ReportToContactId { get; set; }
 
         [JsonProperty("skills")]
         public string Skills { get; set; }
@@ -122,7 +116,7 @@ namespace VincereSharp
         public string Skype { get; set; }
 
         [JsonProperty("start_date")]
-        public System.DateTimeOffset StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         [JsonProperty("switchboard_phone")]
         public string SwitchboardPhone { get; set; }

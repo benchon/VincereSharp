@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,29 @@ namespace WebTest.Controllers
     public class ContactsController : Controller
     {
         public VincereConfig VincereConfig { get; }
+
+        private VincereClient client
+        {
+            get
+            {
+                var accessToken = HttpContext.Session.GetString("AccessToken");
+                var idToken = HttpContext.Session.GetString("IdToken");
+
+                if (string.IsNullOrWhiteSpace(accessToken))
+                {
+                    Response.Redirect("/");
+                }
+
+                var client = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey, VincereConfig.DomainId)
+                {
+                    AccessToken = accessToken,
+                    IdToken = idToken
+                };
+
+                return client;
+            }
+        }
+
         public ContactsController(IOptions<VincereConfig> vincereConfig)
         {
             VincereConfig = vincereConfig.Value;
@@ -20,31 +44,27 @@ namespace WebTest.Controllers
         // GET: Contacts
         public async Task<ActionResult> Index()
         {
-            var accessToken = HttpContext.Session.GetString("AccessToken");
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
+            try
             {
-                Response.Redirect("~/");
+                var model = await client.GetContactsAsync();
+                return View(model);
             }
-
-            var client = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey)
+            catch (HttpRequestException ex)
             {
-                AccessToken = accessToken,
-
-            };
-
-            var model = await client.GetContactsAsync();
-            return View(model);
-        }
-
-        // GET: Contacts/Details/5
-        public ActionResult Details(int id)
-        {
+                Response.Redirect("/");
+            }
             return View();
         }
 
+        // GET: Contacts/Details/5
+        public async Task<ActionResult> Details(int id)
+        {
+            var model = await client.GetContactAsync(id.ToString());
+            return View(model);
+        }
+
         // GET: Contacts/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
             return View();
         }
@@ -52,7 +72,7 @@ namespace WebTest.Controllers
         // POST: Contacts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(IFormCollection collection)
         {
             try
             {
@@ -67,15 +87,16 @@ namespace WebTest.Controllers
         }
 
         // GET: Contacts/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
-            return View();
+            var model = await client.GetContactAsync(id.ToString());
+            return View(model);
         }
 
         // POST: Contacts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(int id, IFormCollection collection)
         {
             try
             {
@@ -90,20 +111,21 @@ namespace WebTest.Controllers
         }
 
         // GET: Contacts/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            return View();
+            var model = await client.GetContactAsync(id.ToString());
+            return View(model);
         }
 
         // POST: Contacts/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id, IFormCollection collection)
         {
             try
             {
                 // TODO: Add delete logic here
-
+                await client.DeleteContactAsync(id.ToString());
                 return RedirectToAction(nameof(Index));
             }
             catch

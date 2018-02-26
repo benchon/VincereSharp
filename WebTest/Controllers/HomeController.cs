@@ -10,6 +10,7 @@ using VincereSharp;
 using WebTest.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System.IO;
 
 
 namespace WebTest.Controllers
@@ -24,32 +25,49 @@ namespace WebTest.Controllers
 
         public async Task<IActionResult> Index([FromQuery(Name = "code")] string code)
         {
+            var vClient = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey, VincereConfig.DomainId);
 
             var accessToken = HttpContext.Session.GetString("AccessToken");
-            if (!string.IsNullOrWhiteSpace(accessToken))
+            if (!string.IsNullOrWhiteSpace(accessToken)) // Already have access token
             {
                 Response.Redirect("/Contacts");
             }
-
-            var vClient = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey);
-            if (!string.IsNullOrWhiteSpace(code))
+            else if (!string.IsNullOrWhiteSpace(code)) // have the code to get an access token
             {
                 var tokenResponse = await vClient.GetAuthCode(code);
-                HttpContext.Session.SetString("AccessToken", tokenResponse.AccessToken);
-                HttpContext.Session.SetString("RefresherToken", tokenResponse.RefreshToken);
-                HttpContext.Session.SetString("IdToken", tokenResponse.IdToken);
-                Response.Redirect("/Contacts");
+                HandleAuthResponse(tokenResponse);
             }
-
-            var returnUrl = VincereConfig.RedirectUrl;
-            if (string.IsNullOrWhiteSpace(returnUrl))
+            else if (System.IO.File.Exists("./RefreshToken.txt")) // have a Refresh token to get an access token
             {
-                returnUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
-                returnUrl = HttpContext.Request.GetDisplayUrl();
+                var refreshToken = System.IO.File.ReadAllText("./RefreshToken.txt").Trim();
+                var tokenResponse = await vClient.GetRefreshToken(refreshToken);
+                HandleAuthResponse(tokenResponse);
             }
-            ViewData["LoginUrl"] = vClient.GetLoginUrl(returnUrl);
+            else
+            {
+                // no previous auth so we need a login url
+                var returnUrl = VincereConfig.RedirectUrl;
+                if (string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    returnUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
+                    returnUrl = HttpContext.Request.GetDisplayUrl();
+                }
+                ViewData["LoginUrl"] = vClient.GetLoginUrl(returnUrl);
+            }
 
             return View();
+        }
+
+        private void HandleAuthResponse(TokenResponse tokenResponse)
+        {
+            HttpContext.Session.SetString("AccessToken", tokenResponse.AccessToken);
+            HttpContext.Session.SetString("IdToken", tokenResponse.IdToken);
+            if (!string.IsNullOrWhiteSpace(tokenResponse.RefreshToken))
+            {
+                HttpContext.Session.SetString("RefresherToken", tokenResponse.RefreshToken);
+                System.IO.File.WriteAllText("./RefreshToken.txt", tokenResponse.RefreshToken);
+            }
+            Response.Redirect("/Contacts");
         }
 
         public IActionResult About()

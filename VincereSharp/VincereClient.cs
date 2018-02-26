@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace VincereSharp
 {
@@ -33,6 +35,14 @@ namespace VincereSharp
             _domainId = domainId;
         }
 
+        public VincereClient(VincereConfig config, bool useTest = false)
+        {
+            _useTest = useTest;
+            _clientId = config.ClientId;
+            _apiKey = config.ApiKey;
+            _domainId = config.DomainId;
+        }
+
         private HttpClient _client;
         private HttpClient Client
         {
@@ -43,7 +53,7 @@ namespace VincereSharp
                     BaseAddress = new Uri(GetBaseUrl(_domainId)),
                     DefaultRequestHeaders =
                                 {
-                                    { "id-token", AccessToken },
+                                    { "id-token", IdToken },
                                     { "x-api-key", _apiKey }
                                 }
                 });
@@ -127,10 +137,16 @@ namespace VincereSharp
 
         public async Task<IEnumerable<Contact>> GetContactsAsync(bool forceRefresh = false)
         {
-            var json = await Client.GetStringAsync($"/api/v2/contact/");
-            var items = await Task.Run(() => JsonConvert.DeserializeObject<IEnumerable<Contact>>(json));
+            var contacts = new List<Contact>();
+            var json = await Client.GetStringAsync($"/api/v2/contact/search/fl=id,current_location;sort=created_date asc");
+            var items = await Task.Run(() => JsonConvert.DeserializeObject<ContactSearchResult>(json));
+            foreach (var c in items.Result.Items)
+            {
+                var newContact = await GetContactAsync(c.Id.ToString());
+                contacts.Add(newContact);
+            }
 
-            return items;
+            return contacts;
         }
 
         public async Task<Contact> GetContactAsync(string id)
