@@ -49,7 +49,7 @@ namespace WebTest.Controllers
                 var returnUrl = VincereConfig.RedirectUrl;
                 if (string.IsNullOrWhiteSpace(returnUrl))
                 {
-                    returnUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
+                    //returnUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
                     returnUrl = HttpContext.Request.GetDisplayUrl();
                 }
                 ViewData["LoginUrl"] = vClient.GetLoginUrl(returnUrl);
