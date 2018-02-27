@@ -26,7 +26,7 @@ namespace VincereSharp
     public partial class Item
     {
         [JsonProperty("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         [JsonProperty("current_location")]
         public CurrentLocation CurrentLocation { get; set; }

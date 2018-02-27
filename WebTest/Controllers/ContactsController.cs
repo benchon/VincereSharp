@@ -49,17 +49,16 @@ namespace WebTest.Controllers
                 var model = await client.GetContactsAsync();
                 return View(model);
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
-                Response.Redirect("/");
+                return RedirectToAction(nameof(Index),"Contacts");
             }
-            return View();
         }
 
         // GET: Contacts/Details/5
         public async Task<ActionResult> Details(int id)
         {
-            var model = await client.GetContactAsync(id.ToString());
+            var model = await client.GetContactAsync(id);
             return View(model);
         }
 
@@ -72,12 +71,12 @@ namespace WebTest.Controllers
         // POST: Contacts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(IFormCollection collection)
+        public async Task<ActionResult> Create([FromForm]Contact contact)
         {
             try
             {
                 // TODO: Add insert logic here
-
+                var result = await client.AddContactAsync(contact);
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -89,22 +88,22 @@ namespace WebTest.Controllers
         // GET: Contacts/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
-            var model = await client.GetContactAsync(id.ToString());
+            var model = await client.GetContactAsync(id);
             return View(model);
         }
 
         // POST: Contacts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(int id, [FromForm]Contact contact)
         {
             try
             {
                 // TODO: Add update logic here
-
+                var result = await client.UpdateContactAsync(contact, id);
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
                 return View();
             }
@@ -113,8 +112,15 @@ namespace WebTest.Controllers
         // GET: Contacts/Delete/5
         public async Task<ActionResult> Delete(int id)
         {
-            var model = await client.GetContactAsync(id.ToString());
-            return View(model);
+            try
+            {
+                var model = await client.GetContactAsync(id);
+                return View(model);
+            }
+            catch (HttpRequestException ex)
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // POST: Contacts/Delete/5
@@ -125,7 +131,7 @@ namespace WebTest.Controllers
             try
             {
                 // TODO: Add delete logic here
-                await client.DeleteContactAsync(id.ToString());
+                await client.DeleteContactAsync(id);
                 return RedirectToAction(nameof(Index));
             }
             catch

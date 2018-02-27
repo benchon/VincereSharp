@@ -142,14 +142,21 @@ namespace VincereSharp
             var items = await Task.Run(() => JsonConvert.DeserializeObject<ContactSearchResult>(json));
             foreach (var c in items.Result.Items)
             {
-                var newContact = await GetContactAsync(c.Id.ToString());
-                contacts.Add(newContact);
+                try
+                {
+                    var newContact = await GetContactAsync(c.Id);
+                    contacts.Add(newContact);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             return contacts;
         }
 
-        public async Task<Contact> GetContactAsync(string id)
+        public async Task<Contact> GetContactAsync(int id)
         {
             // https://www.vincere.io/api/v2/contact 
             var json = await Client.GetStringAsync($"/api/v2/contact/{id}");
@@ -171,9 +178,9 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<bool> UpdateContactAsync(Contact item, string id)
+        public async Task<bool> UpdateContactAsync(Contact item, int id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id <=0)
                 return false;
 
             var serializedItem = JsonConvert.SerializeObject(item);
@@ -185,12 +192,12 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<bool> DeleteContactAsync(string id)
+        public async Task<bool> DeleteContactAsync(int id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (id <= 0)
                 return false;
 
-            var response = await Client.DeleteAsync($"api/item/{id}");
+            var response = await Client.DeleteAsync($"api/v2/contact/{id}");
 
             return response.IsSuccessStatusCode;
         }

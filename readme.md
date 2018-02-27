@@ -1,6 +1,6 @@
 # VincereSharp
 
-An unofficial cross platform Vincere api sdk written in C# and .net netcore.
+An unofficial cross platform Vincere api sdk written in C# and .net core.
 
 ## Requirements
 
