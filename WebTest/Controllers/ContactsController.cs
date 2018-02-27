@@ -21,9 +21,10 @@ namespace WebTest.Controllers
                 var accessToken = HttpContext.Session.GetString("AccessToken");
                 var idToken = HttpContext.Session.GetString("IdToken");
 
-                if (string.IsNullOrWhiteSpace(accessToken))
+                if (string.IsNullOrWhiteSpace(idToken))
                 {
                     Response.Redirect("/");
+                    //RedirectToAction("Index", "Home");
                 }
 
                 var client = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey, VincereConfig.DomainId)
@@ -51,7 +52,8 @@ namespace WebTest.Controllers
             }
             catch (Exception ex)
             {
-                return RedirectToAction(nameof(Index),"Contacts");
+                return RedirectToAction(nameof(Index),"Home");
+                throw;
             }
         }
 
