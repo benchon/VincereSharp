@@ -10,5 +10,6 @@ namespace VincereSharp
         public string ApiKey { get; set; }
         public string RedirectUrl { get; set; }
         public string DomainId { get; set; }
+        public bool UseTest { get; set; }
     }
 }

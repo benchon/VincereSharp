@@ -11,48 +11,54 @@ using WebTest.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.IO;
+using WebTest.Services;
 
 
 namespace WebTest.Controllers
 {
     public class HomeController : Controller
     {
-        public VincereConfig VincereConfig { get; }
+        private VincereClient VincereClient
+        {
+            get => VincereSessionHelper.Client;
+            set => VincereSessionHelper.Client = value;
+        }
+
         public HomeController(IOptions<VincereConfig> vincereConfig)
         {
-            VincereConfig = vincereConfig.Value;
+            if(VincereClient==null)
+                VincereClient = new VincereClient(vincereConfig.Value);
         }
 
         public async Task<IActionResult> Index([FromQuery(Name = "code")] string code)
         {
-            var vClient = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey, VincereConfig.DomainId);
-
-            var accessToken = HttpContext.Session.GetString("AccessToken");
-            if (!string.IsNullOrWhiteSpace(accessToken)) // Already have access token
+            if (!string.IsNullOrWhiteSpace(VincereClient.IdToken)) // Already have access token
             {
-                Response.Redirect("/Contacts");
+                return RedirectToAction("Index", "Contacts");
             }
-            else if (!string.IsNullOrWhiteSpace(code)) // have the code to get an access token
+            if (!string.IsNullOrWhiteSpace(code)) // have the code to get an access token
             {
-                var tokenResponse = await vClient.GetAuthCode(code);
-                HandleAuthResponse(tokenResponse);
+                var tokenResponse = await VincereClient.GetAuthCode(code);
+                //HandleAuthResponse(tokenResponse);
+                return RedirectToAction("Index", "Contacts");
             }
-            else if (System.IO.File.Exists("./RefreshToken.txt")) // have a Refresh token to get an access token
+            else if (System.IO.File.Exists("./RefreshToken.txt") || !string.IsNullOrWhiteSpace(VincereClient.RefresherToken)) // have a Refresh token to get an access token
             {
-                var refreshToken = System.IO.File.ReadAllText("./RefreshToken.txt").Trim();
-                var tokenResponse = await vClient.GetRefreshToken(refreshToken);
-                HandleAuthResponse(tokenResponse);
+                var refreshToken = VincereClient.RefresherToken ?? System.IO.File.ReadAllText("./RefreshToken.txt").Trim();
+                var tokenResponse = await VincereClient.GetRefreshToken(refreshToken);
+                //(tokenResponse);
+                return RedirectToAction("Index", "Contacts");
             }
             else
             {
                 // no previous auth so we need a login url
-                var returnUrl = VincereConfig.RedirectUrl;
+                var returnUrl = VincereClient.Config.RedirectUrl;
                 if (string.IsNullOrWhiteSpace(returnUrl))
                 {
                     //returnUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
                     returnUrl = HttpContext.Request.GetDisplayUrl();
                 }
-                ViewData["LoginUrl"] = vClient.GetLoginUrl(returnUrl);
+                ViewData["LoginUrl"] = VincereClient.GetLoginUrl(returnUrl);
             }
 
             return View();

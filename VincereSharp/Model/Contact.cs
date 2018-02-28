@@ -8,10 +8,7 @@
     public partial class Contact
     {
         [JsonProperty("id")]
-        public long Id { get; set; }
-
-        [JsonProperty("admin_time_temp")]
-        public bool AdminTimeTemp { get; set; }
+        public int? Id { get; set; }
 
         [JsonProperty("candidate_source_id")]
         public long? CandidateSourceId { get; set; }
@@ -103,6 +100,9 @@
         [JsonProperty("phone")]
         public string Phone { get; set; }
 
+        /// <summary>
+        /// Registration Date. Must be in format "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'.
+        /// </summary>
         [JsonProperty("registration_date")]
         public DateTime? RegistrationDate { get; set; }
 
@@ -134,5 +134,10 @@
     public partial class Contact
     {
         public static Contact FromJson(string json) => JsonConvert.DeserializeObject<Contact>(json, VincereSharp.Converter.Settings);
+    }
+
+    public class ContactCreatedResponse
+    {
+        public int id { get; set; }
     }
 }

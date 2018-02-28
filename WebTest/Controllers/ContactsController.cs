@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,47 +8,30 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using VincereSharp;
+using WebTest.Services;
 
 namespace WebTest.Controllers
 {
     public class ContactsController : Controller
     {
-        public VincereConfig VincereConfig { get; }
-
-        private VincereClient client
+        private VincereClient VincereClient
         {
-            get
-            {
-                var accessToken = HttpContext.Session.GetString("AccessToken");
-                var idToken = HttpContext.Session.GetString("IdToken");
-
-                if (string.IsNullOrWhiteSpace(idToken))
-                {
-                    Response.Redirect("/");
-                    //RedirectToAction("Index", "Home");
-                }
-
-                var client = new VincereClient(VincereConfig.ClientId, VincereConfig.ApiKey, VincereConfig.DomainId)
-                {
-                    AccessToken = accessToken,
-                    IdToken = idToken
-                };
-
-                return client;
-            }
+            get => VincereSessionHelper.Client;
+            set => VincereSessionHelper.Client = value;
         }
 
         public ContactsController(IOptions<VincereConfig> vincereConfig)
         {
-            VincereConfig = vincereConfig.Value;
+            if (VincereClient == null)
+                VincereClient = new VincereClient(vincereConfig.Value);
         }
 
         // GET: Contacts
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index([FromQuery] string searchText = "")
         {
             try
             {
-                var model = await client.GetContactsAsync();
+                var model = await VincereClient.GetContactsAsync(searchText);
                 return View(model);
             }
             catch (Exception ex)
@@ -60,7 +44,7 @@ namespace WebTest.Controllers
         // GET: Contacts/Details/5
         public async Task<ActionResult> Details(int id)
         {
-            var model = await client.GetContactAsync(id);
+            var model = await VincereClient.GetContactAsync(id);
             return View(model);
         }
 
@@ -77,12 +61,14 @@ namespace WebTest.Controllers
         {
             try
             {
-                // TODO: Add insert logic here
-                var result = await client.AddContactAsync(contact);
+                contact.RegistrationDate = DateTime.Now;
+                var result = await VincereClient.AddContactAsync(contact);
+                TempData["Message"] = "Contact Created";
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
                 return View();
             }
         }
@@ -90,7 +76,7 @@ namespace WebTest.Controllers
         // GET: Contacts/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
-            var model = await client.GetContactAsync(id);
+            var model = await VincereClient.GetContactAsync(id);
             return View(model);
         }
 
@@ -102,7 +88,7 @@ namespace WebTest.Controllers
             try
             {
                 // TODO: Add update logic here
-                var result = await client.UpdateContactAsync(contact, id);
+                var result = await VincereClient.UpdateContactAsync(contact, id);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -116,7 +102,7 @@ namespace WebTest.Controllers
         {
             try
             {
-                var model = await client.GetContactAsync(id);
+                var model = await VincereClient.GetContactAsync(id);
                 return View(model);
             }
             catch (HttpRequestException ex)
@@ -132,13 +118,14 @@ namespace WebTest.Controllers
         {
             try
             {
-                // TODO: Add delete logic here
-                await client.DeleteContactAsync(id);
+                var response = await VincereClient.DeleteContactAsync(id);
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                throw;
                 return View();
+
             }
         }
     }

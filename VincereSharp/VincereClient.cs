@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,36 +12,38 @@ namespace VincereSharp
 {
     public class VincereClient
     {
-        private string _clientId;
-        private string _apiKey;
-        private string _domainId;
+        private JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
+                                                                    {
+                                                                        NullValueHandling = NullValueHandling.Ignore,
+                                                                        DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.'000Z'"
+                                                                    };
 
-        private bool _useTest = false;
-        private bool _isLoggedin = false;
-
-        public string AccessToken { get; set; }
         public string RefresherToken { get; set; }
         public string IdToken { get; set; }
 
         private string GetBaseUrl(string domain = "id")
         {
-            return _useTest ? $"https://{ domain }.vinceredev.com" : $"https://{ domain }.vincere.io";
+            return Config.UseTest ? $"https://{ domain }.vinceredev.com" : $"https://{ domain }.vincere.io";
         }
 
         public VincereClient(string clientId, string apiKey = "", string domainId = "id", bool useTest = false)
         {
-            _useTest = useTest;
-            _clientId = clientId;
-            _apiKey = apiKey;
-            _domainId = domainId;
+            Config.UseTest = useTest;
+            Config.ClientId = clientId;
+            Config.ApiKey = apiKey;
+            Config.DomainId = domainId;
         }
 
-        public VincereClient(VincereConfig config, bool useTest = false)
+        public VincereClient(VincereConfig config)
         {
-            _useTest = useTest;
-            _clientId = config.ClientId;
-            _apiKey = config.ApiKey;
-            _domainId = config.DomainId;
+            Config = config;
+        }
+
+        private VincereConfig _config;
+        public VincereConfig Config
+        {
+            get => _config ?? (_config = new VincereConfig());
+            set => _config = value;
         }
 
         private HttpClient _client;
@@ -50,11 +53,11 @@ namespace VincereSharp
             {
                 return _client ?? (_client = new HttpClient
                 {
-                    BaseAddress = new Uri(GetBaseUrl(_domainId)),
+                    BaseAddress = new Uri(GetBaseUrl(Config.DomainId)),
                     DefaultRequestHeaders =
                                 {
                                     { "id-token", IdToken },
-                                    { "x-api-key", _apiKey }
+                                    { "x-api-key", Config.ApiKey }
                                 }
                 });
             }
@@ -63,7 +66,7 @@ namespace VincereSharp
         #region "Auth"
         public string GetLoginUrl(string redirectUrl)
         {
-            return GetLoginUrl(_clientId, redirectUrl);
+            return GetLoginUrl(Config.ClientId, redirectUrl);
         }
 
         public string GetLoginUrl(string clientId, string redirectUrl, string state = null)
@@ -84,13 +87,13 @@ namespace VincereSharp
             return url.ToString();
         }
 
-        public async Task<TokenResponse> GetAuthCode(string code)
+        public async Task<TokenResponse> GetAuthCode(string AuthCode)
         {
             var client = new HttpClient { BaseAddress = new Uri(GetBaseUrl()) };
             var values = new Dictionary<string, string>()
             {
-                {"client_id", _clientId},
-                {"code", code},
+                {"client_id", Config.ClientId},
+                {"code", AuthCode},
                 {"grant_type", "authorization_code"}
             };
             var content = new FormUrlEncodedContent(values);
@@ -105,7 +108,9 @@ namespace VincereSharp
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<TokenResponse>(json);
+            var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(json);
+            this.SetTokenResponse(tokenResponse);
+            return tokenResponse;
         }
 
         public async Task<TokenResponse> GetRefreshToken(string refreshToken)
@@ -113,7 +118,7 @@ namespace VincereSharp
             var client = new HttpClient { BaseAddress = new Uri(GetBaseUrl()) };
             var values = new Dictionary<string, string>()
             {
-                {"client_id", _clientId},
+                {"client_id", Config.ClientId},
                 {"refresh_token", refreshToken},
                 {"grant_type", "refresh_token"}
             };
@@ -129,61 +134,93 @@ namespace VincereSharp
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<TokenResponse>(json);
+            var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(json);
+            this.SetTokenResponse(tokenResponse);
+            return tokenResponse;
+
+        }
+
+        private void SetTokenResponse(TokenResponse tokenResponse)
+        {
+            this.IdToken = tokenResponse.IdToken;
+            this.RefresherToken = tokenResponse.RefreshToken;
         }
         #endregion
 
         #region "Contact"
 
-        public async Task<IEnumerable<Contact>> GetContactsAsync(bool forceRefresh = false)
+        public async Task<IEnumerable<ContactSearchResultItem>> GetContactsAsync(string searchText = "")
         {
-            var contacts = new List<Contact>();
-            var json = await Client.GetStringAsync($"/api/v2/contact/search/fl=id,current_location;sort=created_date asc");
-            var items = await Task.Run(() => JsonConvert.DeserializeObject<ContactSearchResult>(json));
-            foreach (var c in items.Result.Items)
-            {
-                try
-                {
-                    var newContact = await GetContactAsync(c.Id);
-                    contacts.Add(newContact);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
+            var searchUrl =
+                $"/api/v2/contact/search/fl=id,name,job_title,email,company,phone,note;sort=created_date asc";
 
-            return contacts;
+            if (!string.IsNullOrWhiteSpace(searchText))
+                searchUrl += $"?q=text:{searchText}";
+            try
+            {
+                var json = await Client.GetStringAsync(searchUrl);
+                var response = await Task.Run(() => JsonConvert.DeserializeObject<ContactSearchResult>(json));
+                return response.Result.Items;
+            }
+            catch (HttpRequestException hrex)
+            {
+                if (string.IsNullOrWhiteSpace(this.RefresherToken)) throw;
+
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.GetContactsAsync(searchText);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
         }
 
         public async Task<Contact> GetContactAsync(int id)
         {
-            // https://www.vincere.io/api/v2/contact 
             var json = await Client.GetStringAsync($"/api/v2/contact/{id}");
-            return await Task.Run(() => JsonConvert.DeserializeObject<Contact>(json));
+            var contact = JsonConvert.DeserializeObject<Contact>(json);
+            return contact;
         }
 
-        public async Task<bool> AddContactAsync(Contact item)
+        public async Task<int> AddContactAsync(Contact item)
         {
             if (item == null)
-                return false;
+                throw new NullReferenceException("Contact is null");
 
-            var serializedItem = JsonConvert.SerializeObject(item);
+            if (string.IsNullOrWhiteSpace(IdToken))
+                throw new NullReferenceException("IdToken is null");
 
-            var response = await Client.PostAsync($"/api/v2/contact",
-                new StringContent(serializedItem,
-                    Encoding.UTF8,
-                    "application/json"));
+            var serializedItem = JsonConvert.SerializeObject(item,
+                                                            Formatting.None,
+                                                            jsonSerializerSettings);
 
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var response = await Client.PostAsync($"/api/v2/contact",
+                    new StringContent(serializedItem,
+                        Encoding.UTF8,
+                        "application/json"));
+                var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<ContactCreatedResponse>(json).id;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.AddContactAsync(item);
+            }
         }
 
         public async Task<bool> UpdateContactAsync(Contact item, int id)
         {
-            if (id <=0)
+            if (id <= 0)
                 return false;
 
-            var serializedItem = JsonConvert.SerializeObject(item);
+            var serializedItem = JsonConvert.SerializeObject(item,
+                                                             Formatting.None, 
+                                                             jsonSerializerSettings);
             var buffer = Encoding.UTF8.GetBytes(serializedItem);
             var byteContent = new ByteArrayContent(buffer);
 
@@ -198,6 +235,8 @@ namespace VincereSharp
                 return false;
 
             var response = await Client.DeleteAsync($"api/v2/contact/{id}");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<DeleteResponse>(json);
 
             return response.IsSuccessStatusCode;
         }
