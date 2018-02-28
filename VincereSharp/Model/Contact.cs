@@ -129,11 +129,6 @@
         public string Xing { get; set; }
     }
 
-    public partial class Contact
-    {
-        public static Contact FromJson(string json) => JsonConvert.DeserializeObject<Contact>(json, VincereSharp.Converter.Settings);
-    }
-
     public class ContactCreatedResponse
     {
         public int id { get; set; }
