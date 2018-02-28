@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using VincereSharp;
 using WebTest.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System.IO;
 using WebTest.Services;
 
 

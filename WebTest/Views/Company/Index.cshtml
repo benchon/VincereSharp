@@ -1,0 +1,179 @@
+﻿@model IEnumerable<VincereSharp.Company>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.BillingGroupName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.BusinessNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CareersiteUrl)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CompanyName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CompanyNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ContactInCompany)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreatorId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EmployeesNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ExternalId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.FacebookUrl)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Fax)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.GeneralPoNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.HeadQuarter)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Id)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.LinkedinUrl)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Note)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ParentId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Phone)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RegistrationDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RssUrls)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.SwitchBoard)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TaxExempt)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TradingName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Website)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.BillingGroupName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BusinessNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CareersiteUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContactInCompany)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatorId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EmployeesNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExternalId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FacebookUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Fax)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.GeneralPoNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HeadQuarter)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LinkedinUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Note)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ParentId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Phone)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RegistrationDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RssUrls)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SwitchBoard)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TaxExempt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TradingName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Website)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

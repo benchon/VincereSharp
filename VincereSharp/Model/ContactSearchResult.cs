@@ -49,9 +49,6 @@ namespace VincereSharp
 
     public partial class Company
     {
-        [JsonProperty("id")]
-        public long Id { get; set; }
-
         [JsonProperty("name")]
         public string Name { get; set; }
     }

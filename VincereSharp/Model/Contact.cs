@@ -1,8 +1,6 @@
 ﻿namespace VincereSharp
 {
     using System;
-    using System.Collections.Generic;
-    using System.Net;
     using Newtonsoft.Json;
 
     public partial class Contact
