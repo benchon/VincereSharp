@@ -13,13 +13,6 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <div class="checkbox">
-                    <label>
-                        <input asp-for="AdminTimeTemp" /> @Html.DisplayNameFor(model => model.AdminTimeTemp)
-                    </label>
-                </div>
-            </div>
-            <div class="form-group">
                 <label asp-for="CandidateSourceId" class="control-label"></label>
                 <input asp-for="CandidateSourceId" class="form-control" />
                 <span asp-validation-for="CandidateSourceId" class="text-danger"></span>

@@ -36,7 +36,7 @@ namespace WebTest.Controllers
             }
             catch (Exception ex)
             {
-                return RedirectToAction(nameof(Index),"Home");
+                return RedirectToAction(nameof(Index), "Home");
                 throw;
             }
         }
@@ -89,6 +89,7 @@ namespace WebTest.Controllers
             {
                 // TODO: Add update logic here
                 var result = await VincereClient.UpdateContactAsync(contact, id);
+                TempData["Message"] = "Contact Updated";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

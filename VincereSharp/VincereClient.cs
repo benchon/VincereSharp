@@ -7,16 +7,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Net.Http.Headers;
 
 namespace VincereSharp
 {
     public class VincereClient
     {
         private JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
-                                                                    {
-                                                                        NullValueHandling = NullValueHandling.Ignore,
-                                                                        DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.'000Z'"
-                                                                    };
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.'000Z'"
+        };
 
         public string RefresherToken { get; set; }
         public string IdToken { get; set; }
@@ -176,11 +177,22 @@ namespace VincereSharp
             }
         }
 
-        public async Task<Contact> GetContactAsync(int id)
+        public async Task<Contact> GetContactAsync(int id, int retry = 2)
         {
-            var json = await Client.GetStringAsync($"/api/v2/contact/{id}");
-            var contact = JsonConvert.DeserializeObject<Contact>(json);
-            return contact;
+            try
+            {
+                var json = await Client.GetStringAsync($"/api/v2/contact/{id}");
+                var contact = JsonConvert.DeserializeObject<Contact>(json);
+                return contact;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                if (retry <= 0) throw;
+
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.GetContactAsync(id, --retry);
+            }
         }
 
         public async Task<int> AddContactAsync(Contact item)
@@ -197,7 +209,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync($"/api/v2/contact",
+                var response = await Client.PostAsync("/api/v2/contact",
                     new StringContent(serializedItem,
                         Encoding.UTF8,
                         "application/json"));
@@ -219,14 +231,24 @@ namespace VincereSharp
                 return false;
 
             var serializedItem = JsonConvert.SerializeObject(item,
-                                                             Formatting.None, 
+                                                             Formatting.None,
                                                              jsonSerializerSettings);
-            var buffer = Encoding.UTF8.GetBytes(serializedItem);
-            var byteContent = new ByteArrayContent(buffer);
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/contact/{id}",
+                    new StringContent(serializedItem,
+                        Encoding.UTF8,
+                        "application/json"));
 
-            var response = await Client.PutAsync(new Uri($"api/v2/contact/{id}"), byteContent);
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.UpdateContactAsync(item, id);
+            }
 
-            return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> DeleteContactAsync(int id)
