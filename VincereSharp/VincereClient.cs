@@ -146,7 +146,7 @@ namespace VincereSharp
 
         #region "Contact"
 
-        public async Task<IEnumerable<ContactSearchResultItem>> GetContactsAsync(string searchText = "")
+        public async Task<IEnumerable<ContactSearchResultItem>> SearchContactsAsync(string searchText = "")
         {
             var searchUrl =
                 $"/api/v2/contact/search/fl=id,name,job_title,email,company,phone,note;sort=created_date asc";
@@ -164,7 +164,7 @@ namespace VincereSharp
                 if (string.IsNullOrWhiteSpace(this.RefresherToken)) throw;
 
                 await this.GetRefreshToken(this.RefresherToken);
-                return await this.GetContactsAsync(searchText);
+                return await this.SearchContactsAsync(searchText);
             }
             catch (Exception ex)
             {

@@ -29,7 +29,7 @@ namespace WebTest.Controllers
         {
             try
             {
-                var model = await VincereClient.GetContactsAsync(searchText);
+                var model = await VincereClient.SearchContactsAsync(searchText);
                 return View(model);
             }
             catch (Exception ex)
