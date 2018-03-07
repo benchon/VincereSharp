@@ -80,4 +80,9 @@
         public string Website { get; set; }
     }
 
+    public partial class Company
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+    }
 }

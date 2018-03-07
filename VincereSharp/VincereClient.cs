@@ -9,12 +9,6 @@ namespace VincereSharp
 {
     public class VincereClient
     {
-        private JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.'000Z'"
-        };
-
         public string RefresherToken { get; set; }
         public string IdToken { get; set; }
 
@@ -43,6 +37,8 @@ namespace VincereSharp
             set => _config = value;
         }
 
+        #region "Http"
+
         private HttpClient _client;
         private HttpClient Client
         {
@@ -59,6 +55,20 @@ namespace VincereSharp
                 });
             }
         }
+
+        private JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.'000Z'"
+        };
+        private static StringContent BuildResponseContent(string serializedItem)
+        {
+            return new StringContent(serializedItem,
+                Encoding.UTF8,
+                "application/json");
+        }
+
+        #endregion
 
         #region "Auth"
         public string GetLoginUrl(string redirectUrl)
@@ -156,7 +166,7 @@ namespace VincereSharp
             try
             {
                 var json = await Client.GetStringAsync(searchUrl);
-                var response = await Task.Run(() => JsonConvert.DeserializeObject<ContactSearchResult>(json));
+                var response = await Task.Run(() => JsonConvert.DeserializeObject<SearchResult<ContactSearchResultItem>>(json));
                 return response.Result.Items;
             }
             catch (HttpRequestException hrex)
@@ -205,13 +215,10 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync("/api/v2/contact",
-                    new StringContent(serializedItem,
-                        Encoding.UTF8,
-                        "application/json"));
+                var response = await Client.PostAsync("/api/v2/contact", BuildResponseContent(serializedItem));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
-                return JsonConvert.DeserializeObject<ContactCreatedResponse>(json).id;
+                return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
             }
             catch (HttpRequestException ex)
             {
@@ -231,10 +238,7 @@ namespace VincereSharp
                                                              jsonSerializerSettings);
             try
             {
-                var response = await Client.PutAsync($"/api/v2/contact/{id}",
-                    new StringContent(serializedItem,
-                        Encoding.UTF8,
-                        "application/json"));
+                var response = await Client.PutAsync($"/api/v2/contact/{id}", BuildResponseContent(serializedItem));
 
                 return response.IsSuccessStatusCode;
             }
@@ -258,6 +262,128 @@ namespace VincereSharp
 
             return response.IsSuccessStatusCode;
         }
+
+        #endregion
+
+        #region "Companies"
+
+        public async Task<IEnumerable<CompanySearchResultItem>> SearchCompaniesAsync(string searchText = "")
+        {
+            var searchUrl =
+                $"/api/v2/company/search/fl=id,created_date,last_update,owners,industry;sort=created_date asc";
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+                searchUrl += $"?q=text:{searchText}";
+
+            try
+            {
+                var json = await Client.GetStringAsync(searchUrl);
+                var response = JsonConvert.DeserializeObject<SearchResult<CompanySearchResultItem>>(json);
+                return response.Result.Items;
+            }
+            catch (HttpRequestException hrex)
+            {
+                if (string.IsNullOrWhiteSpace(this.RefresherToken)) throw;
+
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.SearchCompaniesAsync(searchText);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<Company> GetCompanyAsync(int id, int retry = 2)
+        {
+            try
+            {
+                var json = await Client.GetStringAsync($"/api/v2/company/{id}");
+                var company = JsonConvert.DeserializeObject<Company>(json);
+                return company;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                if (retry <= 0) throw;
+
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.GetCompanyAsync(id, --retry);
+            }
+        }
+
+        public async Task<int> AddCompanyAsync(Company item)
+        {
+            if (item == null)
+                throw new NullReferenceException("Company is null");
+
+            if (string.IsNullOrWhiteSpace(IdToken))
+                throw new NullReferenceException("IdToken is null");
+
+            var serializedItem = JsonConvert.SerializeObject(item,
+                                                            Formatting.None,
+                                                            jsonSerializerSettings);
+
+            try
+            {
+                var response = await Client.PostAsync("/api/v2/company", BuildResponseContent(serializedItem));
+                var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.AddCompanyAsync(item);
+            }
+        }
+
+        public async Task<bool> UpdateCompanyAsync(Contact item, int id)
+        {
+            if (id <= 0)
+                return false;
+
+            var serializedItem = JsonConvert.SerializeObject(item,
+                                                             Formatting.None,
+                                                             jsonSerializerSettings);
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/company/{id}", BuildResponseContent(serializedItem));
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.UpdateCompanyAsync(item, id);
+            }
+
+        }
+
+        public async Task<bool> DeleteCompanyAsync(int id)
+        {
+            if (id <= 0)
+                return false;
+
+            var response = await Client.DeleteAsync($"api/v2/company/{id}");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<DeleteResponse>(json);
+
+            return response.IsSuccessStatusCode;
+        }
+
+        #endregion
+
+        #region "Candidates"
+
+
+        #endregion
+
+        #region "Jobs"
+
 
         #endregion
     }

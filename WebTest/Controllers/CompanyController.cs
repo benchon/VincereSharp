@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using VincereSharp;
 
 namespace WebTest.Controllers
 {
-    public class CompanyController : Controller
+    public class CompanyController : VincereControllerBase
     {
+        public CompanyController(IOptions<VincereConfig> vincereConfig) : base(vincereConfig) { }
+
         // GET: Company
         public ActionResult Index()
         {

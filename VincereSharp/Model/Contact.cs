@@ -128,9 +128,4 @@
         [JsonProperty("xing")]
         public string Xing { get; set; }
     }
-
-    public class ContactCreatedResponse
-    {
-        public int id { get; set; }
-    }
 }

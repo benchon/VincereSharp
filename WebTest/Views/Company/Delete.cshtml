@@ -1,0 +1,170 @@
+﻿@model VincereSharp.Company
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Company</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.BillingGroupName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.BillingGroupName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.BusinessNumber)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.BusinessNumber)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CareersiteUrl)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CareersiteUrl)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CompanyName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CompanyName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CompanyNumber)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CompanyNumber)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ContactInCompany)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ContactInCompany)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CreatorId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CreatorId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.EmployeesNumber)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.EmployeesNumber)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ExternalId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ExternalId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.FacebookUrl)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.FacebookUrl)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Fax)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Fax)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.GeneralPoNumber)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.GeneralPoNumber)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.HeadQuarter)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.HeadQuarter)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Id)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.LinkedinUrl)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.LinkedinUrl)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Note)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Note)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ParentId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ParentId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Phone)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Phone)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.RegistrationDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.RegistrationDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.RssUrls)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.RssUrls)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.SwitchBoard)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.SwitchBoard)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.TaxExempt)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.TaxExempt)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.TradingName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.TradingName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Website)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Website)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="submit" value="Delete" class="btn btn-default" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
+</div>
