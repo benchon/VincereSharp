@@ -21,3 +21,26 @@ dotnet run
 ```
 
 Alternatively it can be run via Visual Studio on mac and windows by opening the VincereSharp.sln solution file or using Visual Studio code on all platforms.
+
+
+
+## Features Implemented
+- [x] Candidate
+- [x] Contacts
+- [x] Company
+- [ ] Job
+- [ ] Application
+- [ ] files
+- [ ] Activities
+- [ ] User
+- [ ] Search
+- [ ] Reports
+- [ ] Reference
+
+
+
+
+
+
+
+
