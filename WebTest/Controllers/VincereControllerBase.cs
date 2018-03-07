@@ -7,7 +7,7 @@ namespace WebTest.Controllers
 {
     public class VincereControllerBase : Controller
     {
-        private VincereClient VincereClient
+        protected VincereClient VincereClient
         {
             get => VincereSessionHelper.Client;
             set => VincereSessionHelper.Client = value;

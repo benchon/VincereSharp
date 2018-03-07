@@ -10,18 +10,10 @@ using WebTest.Services;
 
 namespace WebTest.Controllers
 {
-    public class ContactsController : Controller
+    public class ContactsController : VincereControllerBase
     {
-        private VincereClient VincereClient
+        public ContactsController(IOptions<VincereConfig> vincereConfig):base(vincereConfig)
         {
-            get => VincereSessionHelper.Client;
-            set => VincereSessionHelper.Client = value;
-        }
-
-        public ContactsController(IOptions<VincereConfig> vincereConfig)
-        {
-            if (VincereClient == null)
-                VincereClient = new VincereClient(vincereConfig.Value);
         }
 
         // GET: Contacts

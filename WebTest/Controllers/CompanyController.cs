@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using VincereSharp;
@@ -10,9 +12,18 @@ namespace WebTest.Controllers
         public CompanyController(IOptions<VincereConfig> vincereConfig) : base(vincereConfig) { }
 
         // GET: Company
-        public ActionResult Index()
+        public async Task<ActionResult> Index([FromQuery] string searchText = "")
         {
-            return View();
+            try
+            {
+                var model = await VincereClient.SearchCompaniesAsync(searchText);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction(nameof(Index), "Home");
+                throw;
+            }
         }
 
         // GET: Company/Details/5
