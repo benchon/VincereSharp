@@ -154,6 +154,118 @@ namespace VincereSharp
         }
         #endregion
 
+        #region "Candidates"
+
+        public async Task<IEnumerable<CandidateSearchResultItem>> SearchCandidatesAsync(string searchText = "")
+        {
+            var searchUrl =
+                $"/api/v2/candidate/search/fl=id,name,job_title,email,company,phone,note;sort=created_date asc";
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+                searchUrl += $"?q=text:{searchText}";
+            try
+            {
+                var json = await Client.GetStringAsync(searchUrl);
+                var response = await Task.Run(() => JsonConvert.DeserializeObject<SearchResult<CandidateSearchResultItem>>(json));
+                return response.Result.Items;
+            }
+            catch (HttpRequestException hrex)
+            {
+                if (string.IsNullOrWhiteSpace(this.RefresherToken)) throw;
+
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.SearchCandidatesAsync(searchText);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<Candidate> GetCandidateAsync(int id, int retry = 2)
+        {
+            try
+            {
+                var json = await Client.GetStringAsync($"/api/v2/candidate/{id}");
+                var Candidate = JsonConvert.DeserializeObject<Candidate>(json);
+                return Candidate;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                if (retry <= 0) throw;
+
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.GetCandidateAsync(id, --retry);
+            }
+        }
+
+        public async Task<int> AddCandidateAsync(Candidate item)
+        {
+            if (item == null)
+                throw new NullReferenceException("Candidate is null");
+
+            if (string.IsNullOrWhiteSpace(IdToken))
+                throw new NullReferenceException("IdToken is null");
+
+            var serializedItem = JsonConvert.SerializeObject(item,
+                                                            Formatting.None,
+                                                            jsonSerializerSettings);
+
+            try
+            {
+                var response = await Client.PostAsync("/api/v2/candidate", BuildResponseContent(serializedItem));
+                var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.AddCandidateAsync(item);
+            }
+        }
+
+        public async Task<bool> UpdateCandidateAsync(Candidate item, int id)
+        {
+            if (id <= 0)
+                return false;
+
+            var serializedItem = JsonConvert.SerializeObject(item,
+                                                             Formatting.None,
+                                                             jsonSerializerSettings);
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/candidate/{id}", BuildResponseContent(serializedItem));
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                await this.GetRefreshToken(this.RefresherToken);
+                return await this.UpdateCandidateAsync(item, id);
+            }
+
+        }
+
+        public async Task<bool> DeleteCandidateAsync(int id)
+        {
+            if (id <= 0)
+                return false;
+
+            var response = await Client.DeleteAsync($"api/v2/candidate/{id}");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<DeleteResponse>(json);
+
+            return response.IsSuccessStatusCode;
+        }
+
+
+        #endregion
+
         #region "Contact"
 
         public async Task<IEnumerable<ContactSearchResultItem>> SearchContactsAsync(string searchText = "")
@@ -377,19 +489,19 @@ namespace VincereSharp
 
         #endregion
 
-        #region "Candidates"
+        #region "Jobs"
 
-        public async Task<IEnumerable<CandidateSearchResultItem>> SearchCandidatesAsync(string searchText = "")
+        public async Task<IEnumerable<JobSearchResultItem>> SearchJobsAsync(string searchText = "")
         {
             var searchUrl =
-                $"/api/v2/candidate/search/fl=id,name,job_title,email,company,phone,note;sort=created_date asc";
+                $"/api/v2/job/search/fl=id,name,job_title,email,company,phone,note;sort=created_date asc";
 
             if (!string.IsNullOrWhiteSpace(searchText))
                 searchUrl += $"?q=text:{searchText}";
             try
             {
                 var json = await Client.GetStringAsync(searchUrl);
-                var response = await Task.Run(() => JsonConvert.DeserializeObject<SearchResult<CandidateSearchResultItem>>(json));
+                var response = await Task.Run(() => JsonConvert.DeserializeObject<SearchResult<JobSearchResultItem>>(json));
                 return response.Result.Items;
             }
             catch (HttpRequestException hrex)
@@ -397,7 +509,7 @@ namespace VincereSharp
                 if (string.IsNullOrWhiteSpace(this.RefresherToken)) throw;
 
                 await this.GetRefreshToken(this.RefresherToken);
-                return await this.SearchCandidatesAsync(searchText);
+                return await this.SearchJobsAsync(searchText);
             }
             catch (Exception ex)
             {
@@ -406,13 +518,13 @@ namespace VincereSharp
             }
         }
 
-        public async Task<Candidate> GetCandidateAsync(int id, int retry = 2)
+        public async Task<Job> GetJobAsync(int id, int retry = 2)
         {
             try
             {
-                var json = await Client.GetStringAsync($"/api/v2/candidate/{id}");
-                var Candidate = JsonConvert.DeserializeObject<Candidate>(json);
-                return Candidate;
+                var json = await Client.GetStringAsync($"/api/v2/job/{id}");
+                var job = JsonConvert.DeserializeObject<Job>(json);
+                return job;
             }
             catch (HttpRequestException ex)
             {
@@ -420,14 +532,14 @@ namespace VincereSharp
                 if (retry <= 0) throw;
 
                 await this.GetRefreshToken(this.RefresherToken);
-                return await this.GetCandidateAsync(id, --retry);
+                return await this.GetJobAsync(id, --retry);
             }
         }
 
-        public async Task<int> AddCandidateAsync(Candidate item)
+        public async Task<int> AddJobAsync(Job item)
         {
             if (item == null)
-                throw new NullReferenceException("Candidate is null");
+                throw new NullReferenceException("Job is null");
 
             if (string.IsNullOrWhiteSpace(IdToken))
                 throw new NullReferenceException("IdToken is null");
@@ -438,7 +550,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync("/api/v2/candidate", BuildResponseContent(serializedItem));
+                var response = await Client.PostAsync("/api/v2/job", BuildResponseContent(serializedItem));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
@@ -447,11 +559,11 @@ namespace VincereSharp
             {
                 Console.WriteLine(ex);
                 await this.GetRefreshToken(this.RefresherToken);
-                return await this.AddCandidateAsync(item);
+                return await this.AddJobAsync(item);
             }
         }
 
-        public async Task<bool> UpdateCandidateAsync(Candidate item, int id)
+        public async Task<bool> UpdateJobAsync(Job item, int id)
         {
             if (id <= 0)
                 return false;
@@ -461,7 +573,7 @@ namespace VincereSharp
                                                              jsonSerializerSettings);
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{id}", BuildResponseContent(serializedItem));
+                var response = await Client.PutAsync($"/api/v2/job/{id}", BuildResponseContent(serializedItem));
 
                 return response.IsSuccessStatusCode;
             }
@@ -469,17 +581,17 @@ namespace VincereSharp
             {
                 Console.WriteLine(ex);
                 await this.GetRefreshToken(this.RefresherToken);
-                return await this.UpdateCandidateAsync(item, id);
+                return await this.UpdateJobAsync(item, id);
             }
 
         }
 
-        public async Task<bool> DeleteCandidateAsync(int id)
+        public async Task<bool> DeleteJobAsync(int id)
         {
             if (id <= 0)
                 return false;
 
-            var response = await Client.DeleteAsync($"api/v2/candidate/{id}");
+            var response = await Client.DeleteAsync($"api/v2/job/{id}");
             var json = await response.Content.ReadAsStringAsync();
             var respObj = JsonConvert.DeserializeObject<DeleteResponse>(json);
 
@@ -489,9 +601,39 @@ namespace VincereSharp
 
         #endregion
 
-        #region "Jobs"
+        #region  "Applications"
 
 
         #endregion
+
+        #region "Files"
+
+
+        #endregion
+
+        #region "Activities"
+
+
+        #endregion
+
+        #region "User"
+
+
+        #endregion
+
+        #region "Search"
+
+
+        #endregion
+
+        #region "Reports
+
+        #endregion
+
+        #region "References"
+
+
+        #endregion
+
     }
 }
