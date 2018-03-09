@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -61,6 +63,14 @@ namespace VincereSharp
             NullValueHandling = NullValueHandling.Ignore,
             DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.'000Z'"
         };
+
+        private string CreateSerializedItem(Object obj)
+        {
+            return JsonConvert.SerializeObject(obj,
+                                            Formatting.None,
+                                            jsonSerializerSettings);
+        }
+
         private static StringContent BuildResponseContent(string serializedItem)
         {
             return new StringContent(serializedItem,
@@ -120,6 +130,12 @@ namespace VincereSharp
             return tokenResponse;
         }
 
+
+        public async Task<TokenResponse> GetRefreshToken()
+        {
+            return await GetRefreshToken(this.RefresherToken);
+        }
+
         public async Task<TokenResponse> GetRefreshToken(string refreshToken)
         {
             var client = new HttpClient { BaseAddress = new Uri(GetBaseUrl()) };
@@ -152,14 +168,28 @@ namespace VincereSharp
             this.IdToken = tokenResponse.IdToken;
             this.RefresherToken = tokenResponse.RefreshToken;
         }
+
+        private async Task CheckAuthToken()
+        {
+            if (string.IsNullOrWhiteSpace(IdToken))
+            {
+                if (string.IsNullOrWhiteSpace(RefresherToken))
+                    throw new AuthenticationException("Initial login required to generate refresh token");
+
+                await this.GetRefreshToken();
+            }
+        }
+
         #endregion
 
         #region "Candidates"
 
         public async Task<IEnumerable<CandidateSearchResultItem>> SearchCandidatesAsync(string searchText = "")
         {
+            await CheckAuthToken();
+
             var searchUrl =
-                $"/api/v2/candidate/search/fl=id,name,job_title,email,company,phone,note;sort=created_date asc";
+                $"/api/v2/candidate/search/fl=id,name,current_job_title,email,phone;sort=created_date asc";
 
             if (!string.IsNullOrWhiteSpace(searchText))
                 searchUrl += $"?q=text:{searchText}";
@@ -185,6 +215,8 @@ namespace VincereSharp
 
         public async Task<Candidate> GetCandidateAsync(int id, int retry = 2)
         {
+            await CheckAuthToken();
+
             try
             {
                 var json = await Client.GetStringAsync($"/api/v2/candidate/{id}");
@@ -206,8 +238,7 @@ namespace VincereSharp
             if (item == null)
                 throw new NullReferenceException("Candidate is null");
 
-            if (string.IsNullOrWhiteSpace(IdToken))
-                throw new NullReferenceException("IdToken is null");
+            await CheckAuthToken();
 
             var serializedItem = JsonConvert.SerializeObject(item,
                                                             Formatting.None,
@@ -216,20 +247,33 @@ namespace VincereSharp
             try
             {
                 var response = await Client.PostAsync("/api/v2/candidate", BuildResponseContent(serializedItem));
-                var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
 
-                return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    await GetRefreshToken();
+                    return await AddCandidateAsync(item);
+                }
+
+                response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException ex)
             {
                 Console.WriteLine(ex);
-                await this.GetRefreshToken(this.RefresherToken);
-                return await this.AddCandidateAsync(item);
+                throw;
             }
+
+            return 0;
         }
 
         public async Task<bool> UpdateCandidateAsync(Candidate item, int id)
         {
+            await CheckAuthToken();
+
             if (id <= 0)
                 return false;
 
@@ -251,18 +295,28 @@ namespace VincereSharp
 
         }
 
-        public async Task<bool> DeleteCandidateAsync(int id)
+        public async Task<bool> DeleteCandidateAsync(int id, string reason)
         {
+            await CheckAuthToken();
+
             if (id <= 0)
                 return false;
 
-            var response = await Client.DeleteAsync($"api/v2/candidate/{id}");
+            var serializedItem = CreateSerializedItem(new CandidateDeleteReason(reason));
+
+            var request = new HttpRequestMessage
+            {
+                Content = BuildResponseContent(serializedItem),
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri($"api/v2/candidate/{id}", UriKind.Relative)
+            };
+
+            var response = await Client.SendAsync(request);
             var json = await response.Content.ReadAsStringAsync();
             var respObj = JsonConvert.DeserializeObject<DeleteResponse>(json);
 
             return response.IsSuccessStatusCode;
         }
-
 
         #endregion
 
@@ -318,8 +372,7 @@ namespace VincereSharp
             if (item == null)
                 throw new NullReferenceException("Contact is null");
 
-            if (string.IsNullOrWhiteSpace(IdToken))
-                throw new NullReferenceException("IdToken is null");
+            await CheckAuthToken();
 
             var serializedItem = JsonConvert.SerializeObject(item,
                                                             Formatting.None,
@@ -430,8 +483,7 @@ namespace VincereSharp
             if (item == null)
                 throw new NullReferenceException("Company is null");
 
-            if (string.IsNullOrWhiteSpace(IdToken))
-                throw new NullReferenceException("IdToken is null");
+            await CheckAuthToken();
 
             var serializedItem = JsonConvert.SerializeObject(item,
                                                             Formatting.None,
@@ -541,8 +593,7 @@ namespace VincereSharp
             if (item == null)
                 throw new NullReferenceException("Job is null");
 
-            if (string.IsNullOrWhiteSpace(IdToken))
-                throw new NullReferenceException("IdToken is null");
+            await CheckAuthToken();
 
             var serializedItem = JsonConvert.SerializeObject(item,
                                                             Formatting.None,
@@ -632,6 +683,15 @@ namespace VincereSharp
 
         #region "References"
 
+        public async Task<CandidateSource[]> GetCandidateSources()
+        {
+            await CheckAuthToken();
+
+            var response = await Client.GetAsync("/api/v2/candidatesources");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<CandidateSource[]>(json);
+            return respObj;
+        }
 
         #endregion
 

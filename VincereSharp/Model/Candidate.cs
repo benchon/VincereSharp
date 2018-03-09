@@ -244,5 +244,25 @@ namespace VincereSharp
 
         [JsonProperty("xing")]
         public string Xing { get; set; }
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(FirstName) &&
+                   !string.IsNullOrWhiteSpace(LastName) &&
+                   !string.IsNullOrWhiteSpace(Email) &&
+                   CandidateSourceId != null &&
+                   RegistrationDate != null;
+        }
+    }
+
+    public class CandidateDeleteReason
+    {
+        public CandidateDeleteReason(string reason)
+        {
+            Reason = reason;
+        }
+
+        [JsonProperty("reason")]
+        public string Reason { get; private set; }
     }
 }

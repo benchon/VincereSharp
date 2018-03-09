@@ -2,6 +2,8 @@
 
 An unofficial cross platform Vincere api sdk written in C# and .net core.
 
+It is a multi-targeting project setup to support .net standard 2.0, .net core 2.0 and .net framework 4.5, but this could easily be altered to support lower versions.
+
 ## Requirements
 
 Download and install .net core 
@@ -28,7 +30,7 @@ Alternatively it can be run via Visual Studio on mac and windows by opening the 
 - [x] Candidate
 - [x] Contacts
 - [x] Company
-- [ ] Job
+- [x] Job
 - [ ] Application
 - [ ] files
 - [ ] Activities

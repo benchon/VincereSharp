@@ -12,7 +12,7 @@ namespace WebTest.Controllers
 {
     public class ContactsController : VincereControllerBase
     {
-        public ContactsController(IOptions<VincereConfig> vincereConfig):base(vincereConfig)
+        public ContactsController(IOptions<VincereConfig> vincereConfig) : base(vincereConfig)
         {
         }
 
@@ -39,7 +39,7 @@ namespace WebTest.Controllers
         }
 
         // GET: Contacts/Create
-        public async Task<ActionResult> Create()
+        public ActionResult Create()
         {
             return View();
         }
@@ -112,9 +112,9 @@ namespace WebTest.Controllers
                 var response = await VincereClient.DeleteContactAsync(id);
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                TempData["Message"] = ex.Message;
                 return View();
 
             }
