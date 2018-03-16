@@ -71,7 +71,12 @@ namespace VincereSharp
                                             jsonSerializerSettings);
         }
 
-        private static StringContent BuildResponseContent(string serializedItem)
+        private StringContent BuildResponseContent(object item)
+        {
+            return BuildResponseContent(CreateSerializedItem(item));
+        }
+
+        private StringContent BuildResponseContent(string serializedItem)
         {
             return new StringContent(serializedItem,
                 Encoding.UTF8,
@@ -240,13 +245,9 @@ namespace VincereSharp
 
             await CheckAuthToken();
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                            Formatting.None,
-                                                            jsonSerializerSettings);
-
             try
             {
-                var response = await Client.PostAsync("/api/v2/candidate", BuildResponseContent(serializedItem));
+                var response = await Client.PostAsync("/api/v2/candidate", BuildResponseContent(item));
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
@@ -277,12 +278,9 @@ namespace VincereSharp
             if (id <= 0)
                 return false;
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                             Formatting.None,
-                                                             jsonSerializerSettings);
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{id}", BuildResponseContent(serializedItem));
+                var response = await Client.PutAsync($"/api/v2/candidate/{id}", BuildResponseContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -302,11 +300,9 @@ namespace VincereSharp
             if (id <= 0)
                 return false;
 
-            var serializedItem = CreateSerializedItem(new CandidateDeleteReason(reason));
-
             var request = new HttpRequestMessage
             {
-                Content = BuildResponseContent(serializedItem),
+                Content = BuildResponseContent(new CandidateDeleteReason(reason)),
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri($"api/v2/candidate/{id}", UriKind.Relative)
             };
@@ -374,13 +370,9 @@ namespace VincereSharp
 
             await CheckAuthToken();
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                            Formatting.None,
-                                                            jsonSerializerSettings);
-
             try
             {
-                var response = await Client.PostAsync("/api/v2/contact", BuildResponseContent(serializedItem));
+                var response = await Client.PostAsync("/api/v2/contact", BuildResponseContent(item));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
@@ -398,12 +390,9 @@ namespace VincereSharp
             if (id <= 0)
                 return false;
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                             Formatting.None,
-                                                             jsonSerializerSettings);
             try
             {
-                var response = await Client.PutAsync($"/api/v2/contact/{id}", BuildResponseContent(serializedItem));
+                var response = await Client.PutAsync($"/api/v2/contact/{id}", BuildResponseContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -485,13 +474,9 @@ namespace VincereSharp
 
             await CheckAuthToken();
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                            Formatting.None,
-                                                            jsonSerializerSettings);
-
             try
             {
-                var response = await Client.PostAsync("/api/v2/company", BuildResponseContent(serializedItem));
+                var response = await Client.PostAsync("/api/v2/company", BuildResponseContent(item));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
@@ -509,12 +494,9 @@ namespace VincereSharp
             if (id <= 0)
                 return false;
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                             Formatting.None,
-                                                             jsonSerializerSettings);
             try
             {
-                var response = await Client.PutAsync($"/api/v2/company/{id}", BuildResponseContent(serializedItem));
+                var response = await Client.PutAsync($"/api/v2/company/{id}", BuildResponseContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -595,13 +577,9 @@ namespace VincereSharp
 
             await CheckAuthToken();
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                            Formatting.None,
-                                                            jsonSerializerSettings);
-
             try
             {
-                var response = await Client.PostAsync("/api/v2/job", BuildResponseContent(serializedItem));
+                var response = await Client.PostAsync("/api/v2/job", BuildResponseContent(item));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
@@ -619,12 +597,9 @@ namespace VincereSharp
             if (id <= 0)
                 return false;
 
-            var serializedItem = JsonConvert.SerializeObject(item,
-                                                             Formatting.None,
-                                                             jsonSerializerSettings);
             try
             {
-                var response = await Client.PutAsync($"/api/v2/job/{id}", BuildResponseContent(serializedItem));
+                var response = await Client.PutAsync($"/api/v2/job/{id}", BuildResponseContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -658,6 +633,65 @@ namespace VincereSharp
         #endregion
 
         #region "Files"
+
+        public async Task<int> DocumentUploadAsync(int id, string url, bool isOriginalCV = false)
+        {
+            await CheckAuthToken();
+
+            var docRequest = new DocumentUploadRequest()
+            {
+                Url = url,
+                OriginalCv = isOriginalCV
+            };
+
+            try
+            {
+                var response = await Client.PostAsync($"/api/v2/candidate/{ id }/file", BuildResponseContent(docRequest));
+                var json = await response.Content.ReadAsStringAsync();
+                var responseObj = await Task.Run(() => JsonConvert.DeserializeObject<DocumentUploadResponse>(json));
+                return responseObj.Id;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<Candidate> ParseResumeAsync(string resumeUrl)
+        {
+            await CheckAuthToken();
+
+            var item = new ResumeParseRequest()
+            {
+                Url = resumeUrl
+            };
+
+            try
+            {
+                var response = await Client.PostAsync("/resume/parse", BuildResponseContent(item));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<Candidate>(json);
+                }
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    await GetRefreshToken();
+                    return await ParseResumeAsync(resumeUrl);
+                }
+
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return null;
+        }
 
 
         #endregion

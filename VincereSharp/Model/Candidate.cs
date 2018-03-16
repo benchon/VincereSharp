@@ -253,6 +253,19 @@ namespace VincereSharp
                    CandidateSourceId != null &&
                    RegistrationDate != null;
         }
+
+        public void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Email))
+                throw new NullReferenceException("Email is required");
+
+            if (CandidateSourceId == null)
+                throw new NullReferenceException("Candidate Source Id is required");
+
+            if (RegistrationDate == null)
+                throw new NullReferenceException("Registration Date is required");
+
+        }
     }
 
     public class CandidateDeleteReason
