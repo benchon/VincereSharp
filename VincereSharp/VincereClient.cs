@@ -71,12 +71,12 @@ namespace VincereSharp
                                             jsonSerializerSettings);
         }
 
-        private StringContent BuildResponseContent(object item)
+        private StringContent BuildRequestContent(object item)
         {
-            return BuildResponseContent(CreateSerializedItem(item));
+            return BuildRequestContent(CreateSerializedItem(item));
         }
 
-        private StringContent BuildResponseContent(string serializedItem)
+        private StringContent BuildRequestContent(string serializedItem)
         {
             return new StringContent(serializedItem,
                 Encoding.UTF8,
@@ -247,7 +247,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync("/api/v2/candidate", BuildResponseContent(item));
+                var response = await Client.PostAsync("/api/v2/candidate", BuildRequestContent(item));
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
@@ -280,7 +280,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{id}", BuildResponseContent(item));
+                var response = await Client.PutAsync($"/api/v2/candidate/{id}", BuildRequestContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -302,7 +302,7 @@ namespace VincereSharp
 
             var request = new HttpRequestMessage
             {
-                Content = BuildResponseContent(new CandidateDeleteReason(reason)),
+                Content = BuildRequestContent(new CandidateDeleteReason(reason)),
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri($"api/v2/candidate/{id}", UriKind.Relative)
             };
@@ -372,7 +372,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync("/api/v2/contact", BuildResponseContent(item));
+                var response = await Client.PostAsync("/api/v2/contact", BuildRequestContent(item));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
@@ -392,7 +392,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/contact/{id}", BuildResponseContent(item));
+                var response = await Client.PutAsync($"/api/v2/contact/{id}", BuildRequestContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -476,7 +476,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync("/api/v2/company", BuildResponseContent(item));
+                var response = await Client.PostAsync("/api/v2/company", BuildRequestContent(item));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
@@ -496,7 +496,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/company/{id}", BuildResponseContent(item));
+                var response = await Client.PutAsync($"/api/v2/company/{id}", BuildRequestContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -579,7 +579,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync("/api/v2/job", BuildResponseContent(item));
+                var response = await Client.PostAsync("/api/v2/job", BuildRequestContent(item));
                 var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
@@ -599,7 +599,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/job/{id}", BuildResponseContent(item));
+                var response = await Client.PutAsync($"/api/v2/job/{id}", BuildRequestContent(item));
 
                 return response.IsSuccessStatusCode;
             }
@@ -634,19 +634,21 @@ namespace VincereSharp
 
         #region "Files"
 
-        public async Task<int> DocumentUploadAsync(int id, string url, bool isOriginalCV = false)
+        public async Task<int> DocumentUploadAsync(int id, string url, string fileName, int documentTypeId, bool isOriginalCV = false)
         {
             await CheckAuthToken();
 
             var docRequest = new DocumentUploadRequest()
             {
                 Url = url,
-                OriginalCv = isOriginalCV
+                OriginalCv = isOriginalCV,
+                FileName = fileName,
+                DocumentTypeId = documentTypeId
             };
 
             try
             {
-                var response = await Client.PostAsync($"/api/v2/candidate/{ id }/file", BuildResponseContent(docRequest));
+                var response = await Client.PostAsync($"/api/v2/candidate/{ id }/file", BuildRequestContent(docRequest));
                 var json = await response.Content.ReadAsStringAsync();
                 var responseObj = await Task.Run(() => JsonConvert.DeserializeObject<DocumentUploadResponse>(json));
                 return responseObj.Id;
@@ -669,7 +671,8 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PostAsync("/resume/parse", BuildResponseContent(item));
+                var RequestContent = BuildRequestContent(item);
+                var response = await Client.PostAsync("/api/v2/resume/parse", RequestContent);
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
@@ -722,6 +725,16 @@ namespace VincereSharp
             await CheckAuthToken();
 
             var response = await Client.GetAsync("/api/v2/candidatesources");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<CandidateSource[]>(json);
+            return respObj;
+        }
+
+        public async Task<CandidateSource[]> GetDocumentTypes()
+        {
+            await CheckAuthToken();
+
+            var response = await Client.GetAsync("/api/v2/def/candidate/documenttypes");
             var json = await response.Content.ReadAsStringAsync();
             var respObj = JsonConvert.DeserializeObject<CandidateSource[]>(json);
             return respObj;
