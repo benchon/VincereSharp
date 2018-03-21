@@ -124,6 +124,19 @@ namespace VincereSharp
 
         [JsonProperty("visible_to_all")]
         public bool VisibleToAll { get; set; }
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(EmploymentType) &&
+                   !string.IsNullOrWhiteSpace(InternalDescription) &&
+                   !string.IsNullOrWhiteSpace(PublicDescription) &&
+                   !string.IsNullOrWhiteSpace(JobTitle) &&
+                   !string.IsNullOrWhiteSpace(JobType) &&
+                   OpenDate != null &&
+                   ContactId != null &&
+                   Compensation != null &&
+                   RegistrationDate != null;
+        }
     }
 
     public partial class Compensation

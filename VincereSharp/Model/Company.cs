@@ -78,6 +78,12 @@
 
         [JsonProperty("website")]
         public string Website { get; set; }
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(CompanyName) &&
+                   RegistrationDate != null;
+        }
     }
 
     public partial class Company

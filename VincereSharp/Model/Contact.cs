@@ -127,5 +127,12 @@
 
         [JsonProperty("xing")]
         public string Xing { get; set; }
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(LastName) &&
+                   CompanyId != null &&
+                   RegistrationDate != null;
+        }
     }
 }
