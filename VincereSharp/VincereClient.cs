@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -421,14 +422,36 @@ namespace VincereSharp
 
         #region "Companies"
 
-        public async Task<IEnumerable<CompanySearchResultItem>> SearchCompaniesAsync(string searchText = "")
+        public async Task<IEnumerable<CompanySearchResultItem>> SearchCompaniesAsync(string searchText = "", string companyName = "")
         {
             var searchUrl =
-                $"/api/v2/company/search/fl=id,created_date,last_update,owners,industry;sort=created_date asc";
+                $"/api/v2/company/search/fl=id,name;sort=created_date asc";
+
+            Dictionary<string, string> searchVariables = new Dictionary<string, string>();
 
             if (!string.IsNullOrWhiteSpace(searchText))
-                searchUrl += $"?q=text:{searchText}";
+                searchVariables.Add("text", searchText);
 
+            if (!string.IsNullOrWhiteSpace(companyName))
+                searchVariables.Add("name", companyName);
+
+            if (searchVariables.Count>0)
+            {
+                searchUrl += $"?q=";
+           
+                int count = 1;               
+                foreach (var keyValuePair in searchVariables)
+                {
+                    searchUrl += $"{keyValuePair.Key}:{keyValuePair.Value}";
+                    if (count < searchVariables.Count)
+                    {
+                        searchUrl += "&";
+                    }
+
+                    count++;
+                }
+            }
+            
             try
             {
                 var json = await Client.GetStringAsync(searchUrl);
@@ -437,10 +460,8 @@ namespace VincereSharp
             }
             catch (HttpRequestException hrex)
             {
-                if (string.IsNullOrWhiteSpace(this.RefresherToken)) throw;
-
-                await this.GetRefreshToken(this.RefresherToken);
-                return await this.SearchCompaniesAsync(searchText);
+                Console.WriteLine(hrex.Message);
+                throw;
             }
             catch (Exception ex)
             {
@@ -720,23 +741,63 @@ namespace VincereSharp
 
         #region "References"
 
-        public async Task<CandidateSource[]> GetCandidateSources()
+        public async Task<ReferenceResponse[]> GetCandidateSources()
         {
             await CheckAuthToken();
 
             var response = await Client.GetAsync("/api/v2/candidatesources");
             var json = await response.Content.ReadAsStringAsync();
-            var respObj = JsonConvert.DeserializeObject<CandidateSource[]>(json);
+            var respObj = JsonConvert.DeserializeObject<ReferenceResponse[]>(json);
             return respObj;
         }
 
-        public async Task<CandidateSource[]> GetDocumentTypes()
+        public async Task<ReferenceResponse[]> GetDocumentTypes()
         {
             await CheckAuthToken();
 
             var response = await Client.GetAsync("/api/v2/def/candidate/documenttypes");
             var json = await response.Content.ReadAsStringAsync();
-            var respObj = JsonConvert.DeserializeObject<CandidateSource[]>(json);
+            var respObj = JsonConvert.DeserializeObject<ReferenceResponse[]>(json);
+            return respObj;
+        }
+
+        public async Task<ReferenceResponse[]> GetFunctionalExpertises()
+        {
+            await CheckAuthToken();
+
+            var response = await Client.GetAsync("/api/v2/functionalexpertises");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<ReferenceResponse[]>(json);
+            return respObj;
+        }
+
+        public async Task<ReferenceResponse[]> GetSubFunctionalExpertises(int id)
+        {
+            await CheckAuthToken();
+
+            var response = await Client.GetAsync($"/api/v2/functionalexpertise/{ id }/subfunctionalexpertises");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<ReferenceResponse[]>(json);
+            return respObj;
+        }
+
+        public async Task<ReferenceResponse[]> GetSubFunctionalExpertises()
+        {
+            await CheckAuthToken();
+
+            var response = await Client.GetAsync($"/api/v2/subfunctionalexpertises");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<ReferenceResponse[]>(json);
+            return respObj;
+        }
+
+        public async Task<ReferenceResponse[]> GetIndustries()
+        {
+            await CheckAuthToken();
+
+            var response = await Client.GetAsync("/api/v2/industries");
+            var json = await response.Content.ReadAsStringAsync();
+            var respObj = JsonConvert.DeserializeObject<ReferenceResponse[]>(json);
             return respObj;
         }
 

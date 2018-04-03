@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp2.0;net45</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.1-beta</Version>
+    <Authors>Wayne Thompson</Authors>
+    <RepositoryUrl>https://github.com/benchon/VincereSharp</RepositoryUrl>
+    <Description>An unofficial cross platform Vincere api sdk written in C# and .net netcore.</Description>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/benchon/VincereSharp/master/LICENSE</PackageLicenseUrl>
+    <Copyright>BenchOn pty ltd</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

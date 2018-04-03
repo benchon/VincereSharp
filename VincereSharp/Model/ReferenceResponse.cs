@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace VincereSharp
 {
-    public partial class CandidateSource
+    public partial class ReferenceResponse
     {
         [JsonProperty("value_search")]
         public string ValueSearch { get; set; }
