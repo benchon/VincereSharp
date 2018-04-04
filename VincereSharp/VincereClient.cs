@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -315,13 +314,19 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<int> LinkCandidateIndustries(int Id, int[] IndustryIds)
+        /// <summary>
+        /// Create or update the work history of a candidate
+        /// </summary>
+        /// <param name="id">Candidate Id</param>
+        /// <param name="workExpereinces"></param>
+        /// <returns></returns>
+        public async Task<int> PutCandidateWorkExpereince(int id, WorkExperience[] workExpereinces)
         {
             await CheckAuthToken();
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ Id }/industries", BuildRequestContent(IndustryIds));
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/workexperiences", BuildRequestContent(workExpereinces));
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
@@ -338,6 +343,135 @@ namespace VincereSharp
 
             return 0;
         }
+
+        /// <summary>
+        /// Link industries with the candidate.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="IndustryIds"></param>
+        /// <returns></returns>
+        public async Task<int> LinkCandidateIndustries(int id, int[] IndustryIds)
+        {
+            await CheckAuthToken();
+
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/industries", BuildRequestContent(IndustryIds));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return 0;
+        }
+
+        public async Task<int> LinkCandidateFunctionalExpertise(int id, int[] expertiseIds)
+        {
+            await CheckAuthToken();
+
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertises", 
+                                                                BuildRequestContent(expertiseIds));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return 0;
+        }
+
+        public async Task<int> LinkCandidateSubFunctionalExpertise(int id, int functionalExpertiseId, int[] subFuncExpertiseIds)
+        {
+            await CheckAuthToken();
+
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertise/{ functionalExpertiseId }/subfunctionalexpertises", 
+                                                                BuildRequestContent(subFuncExpertiseIds));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return 0;
+        }
+
+        public async Task<int> PutCandidateCurrentLocation(int id, Address address)
+        {
+            await CheckAuthToken();
+
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/currentlocation", BuildRequestContent(address));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return 0;
+        }
+        
+        public async Task<int> PutCandidatePersonalLocation(int id, Address address)
+        {
+            await CheckAuthToken();
+
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/personallocation", BuildRequestContent(address));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return 0;
+        }
+
         #endregion
 
         #region "Contact"
