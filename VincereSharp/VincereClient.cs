@@ -315,6 +315,29 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<int> LinkCandidateIndustries(int Id, int[] IndustryIds)
+        {
+            await CheckAuthToken();
+
+            try
+            {
+                var response = await Client.PutAsync($"/api/v2/candidate/{ Id }/industries", BuildRequestContent(IndustryIds));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return 0;
+        }
         #endregion
 
         #region "Contact"
