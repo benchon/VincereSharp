@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using VincereSharp;
-using WebTest.Services;
 
 namespace WebTest.Controllers
 {
