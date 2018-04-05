@@ -63,6 +63,15 @@ namespace VincereSharp.UnitTests
             Assert.IsTrue(deleteResult);
 
         }
+
+
+        [TestMethod]
+        public async Task GetFunctionalExpertise()
+        {
+            var FunctionalExpertise = await client.GetFunctionalExpertises();
+
+            Assert.IsNotNull(FunctionalExpertise);
+        }
     }
 }
 
