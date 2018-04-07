@@ -180,7 +180,7 @@ namespace VincereSharp
             if (string.IsNullOrWhiteSpace(IdToken))
             {
                 if (string.IsNullOrWhiteSpace(RefresherToken))
-                    throw new Exception("Initial login required to generate refresh token");
+                    throw new VincereSharpException("Initial login required to generate refresh token");
 
                 await this.GetRefreshToken();
             }
@@ -756,8 +756,6 @@ namespace VincereSharp
 
         #endregion "Jobs"
 
-
-
         #region "Files"
 
         public async Task<int> DocumentUploadAsync(int id, string url, string fileName, int documentTypeId, bool isOriginalCV = false)
@@ -823,8 +821,6 @@ namespace VincereSharp
         }
 
         #endregion "Files"
-
-
 
         #region "References"
 
