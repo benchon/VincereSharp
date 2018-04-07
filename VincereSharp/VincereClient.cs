@@ -352,26 +352,7 @@ namespace VincereSharp
         /// <returns></returns>
         public async Task<int> LinkCandidateIndustries(int id, int[] IndustryIds)
         {
-            await CheckAuthToken();
-
-            try
-            {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/industries", BuildRequestContent(IndustryIds));
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-
-            return 0;
+            return await this.PutObject($"/api/v2/candidate/{ id }/industries", this.BuildRequestContent(IndustryIds));
         }
 
         public async Task<int> LinkCandidateFunctionalExpertise(int id, int[] expertiseIds)
@@ -380,7 +361,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertises", 
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertises",
                                                                 BuildRequestContent(expertiseIds));
                 if (response.IsSuccessStatusCode)
                 {
@@ -405,7 +386,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertise/{ functionalExpertiseId }/subfunctionalexpertises", 
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertise/{ functionalExpertiseId }/subfunctionalexpertises",
                                                                 BuildRequestContent(subFuncExpertiseIds));
                 if (response.IsSuccessStatusCode)
                 {
@@ -426,50 +407,12 @@ namespace VincereSharp
 
         public async Task<int> PutCandidateCurrentLocation(int id, Address address)
         {
-            await CheckAuthToken();
-
-            try
-            {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/currentlocation", BuildRequestContent(address));
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-
-            return 0;
+            return await this.PutObject($"/api/v2/candidate/{ id }/currentlocation", this.BuildRequestContent(address));
         }
-        
+
         public async Task<int> PutCandidatePersonalLocation(int id, Address address)
         {
-            await CheckAuthToken();
-
-            try
-            {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/personallocation", BuildRequestContent(address));
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-
-            return 0;
+            return await this.PutObject($"/api/v2/candidate/{ id }/personallocation", this.BuildRequestContent(address));
         }
 
         #endregion
@@ -592,11 +535,11 @@ namespace VincereSharp
             if (!string.IsNullOrWhiteSpace(companyName))
                 searchVariables.Add("name", companyName);
 
-            if (searchVariables.Count>0)
+            if (searchVariables.Count > 0)
             {
                 searchUrl += $"?q=";
-           
-                int count = 1;               
+
+                int count = 1;
                 foreach (var keyValuePair in searchVariables)
                 {
                     searchUrl += $"{keyValuePair.Key}:{keyValuePair.Value}";
@@ -608,7 +551,7 @@ namespace VincereSharp
                     count++;
                 }
             }
-            
+
             try
             {
                 var json = await Client.GetStringAsync(searchUrl);
@@ -960,5 +903,38 @@ namespace VincereSharp
 
         #endregion
 
+        #region "HttpCient Methods"
+        private async Task<int> PutObject(string url, StringContent payload, int retries = 3)
+        {
+            await this.CheckAuthToken();
+            try
+            {
+                var response = await this.Client.PutAsync(url, (HttpContent)payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+                if (response.StatusCode == HttpStatusCode.Forbidden &&
+                    response.ReasonPhrase == "Unauthorized" &&
+                    retries > 0)
+                {
+                    this.IdToken = string.Empty;
+                    await this.CheckAuthToken();
+                    int num = await this.PutObject(url, payload, --retries);
+                    return num;
+                }
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+            return 0;
+        }
+
+        #endregion
     }
 }
