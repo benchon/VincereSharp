@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace VincereSharp
 {
@@ -32,7 +33,6 @@ namespace VincereSharp
         }
 
         private VincereConfig _config;
-
         public VincereConfig Config
         {
             get => _config ?? (_config = new VincereConfig());
@@ -42,7 +42,6 @@ namespace VincereSharp
         #region "Http"
 
         private HttpClient _client;
-
         private HttpClient Client
         {
             get
@@ -84,10 +83,9 @@ namespace VincereSharp
                 "application/json");
         }
 
-        #endregion "Http"
+        #endregion
 
         #region "Auth"
-
         public string GetLoginUrl(string redirectUrl)
         {
             return GetLoginUrl(Config.ClientId, redirectUrl);
@@ -137,6 +135,7 @@ namespace VincereSharp
             return tokenResponse;
         }
 
+
         public async Task<TokenResponse> GetRefreshToken()
         {
             return await GetRefreshToken(this.RefresherToken);
@@ -166,6 +165,7 @@ namespace VincereSharp
             var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(json);
             this.SetTokenResponse(tokenResponse);
             return tokenResponse;
+
         }
 
         private void SetTokenResponse(TokenResponse tokenResponse)
@@ -179,13 +179,13 @@ namespace VincereSharp
             if (string.IsNullOrWhiteSpace(IdToken))
             {
                 if (string.IsNullOrWhiteSpace(RefresherToken))
-                    throw new Exception("Initial login required to generate refresh token");
+                    throw new AuthenticationException("Initial login required to generate refresh token");
 
                 await this.GetRefreshToken();
             }
         }
 
-        #endregion "Auth"
+        #endregion
 
         #region "Candidates"
 
@@ -290,6 +290,7 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateCandidateAsync(item, id);
             }
+
         }
 
         public async Task<bool> DeleteCandidateAsync(int id, string reason)
@@ -351,26 +352,7 @@ namespace VincereSharp
         /// <returns></returns>
         public async Task<int> LinkCandidateIndustries(int id, int[] IndustryIds)
         {
-            await CheckAuthToken();
-
-            try
-            {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/industries", BuildRequestContent(IndustryIds));
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-
-            return 0;
+            return await this.PutObject($"/api/v2/candidate/{ id }/industries", this.BuildRequestContent(IndustryIds));
         }
 
         public async Task<int> LinkCandidateFunctionalExpertise(int id, int[] expertiseIds)
@@ -425,53 +407,15 @@ namespace VincereSharp
 
         public async Task<int> PutCandidateCurrentLocation(int id, Address address)
         {
-            await CheckAuthToken();
-
-            try
-            {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/currentlocation", BuildRequestContent(address));
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-
-            return 0;
+            return await this.PutObject($"/api/v2/candidate/{ id }/currentlocation", this.BuildRequestContent(address));
         }
 
         public async Task<int> PutCandidatePersonalLocation(int id, Address address)
         {
-            await CheckAuthToken();
-
-            try
-            {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/personallocation", BuildRequestContent(address));
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-
-            return 0;
+            return await this.PutObject($"/api/v2/candidate/{ id }/personallocation", this.BuildRequestContent(address));
         }
 
-        #endregion "Candidates"
+        #endregion
 
         #region "Contact"
 
@@ -559,6 +503,7 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateContactAsync(item, id);
             }
+
         }
 
         public async Task<bool> DeleteContactAsync(int id)
@@ -573,7 +518,7 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        #endregion "Contact"
+        #endregion
 
         #region "Companies"
 
@@ -682,6 +627,7 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateCompanyAsync(item, id);
             }
+
         }
 
         public async Task<bool> DeleteCompanyAsync(int id)
@@ -696,7 +642,7 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        #endregion "Companies"
+        #endregion
 
         #region "Jobs"
 
@@ -784,6 +730,7 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateJobAsync(item, id);
             }
+
         }
 
         public async Task<bool> DeleteJobAsync(int id)
@@ -798,9 +745,13 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        #endregion "Jobs"
+
+        #endregion
+
+        #region  "Applications"
 
 
+        #endregion
 
         #region "Files"
 
@@ -866,9 +817,27 @@ namespace VincereSharp
             return null;
         }
 
-        #endregion "Files"
+
+        #endregion
+
+        #region "Activities"
 
 
+        #endregion
+
+        #region "User"
+
+
+        #endregion
+
+        #region "Search"
+
+
+        #endregion
+
+        #region "Reports
+
+        #endregion
 
         #region "References"
 
@@ -932,6 +901,40 @@ namespace VincereSharp
             return respObj;
         }
 
-        #endregion "References"
+        #endregion
+
+        #region "HttpCient Methods"
+        private async Task<int> PutObject(string url, StringContent payload, int retries = 3)
+        {
+            await this.CheckAuthToken();
+            try
+            {
+                var response = await this.Client.PutAsync(url, (HttpContent)payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+                if (response.StatusCode == HttpStatusCode.Forbidden &&
+                    response.ReasonPhrase == "Unauthorized" &&
+                    retries > 0)
+                {
+                    this.IdToken = string.Empty;
+                    await this.CheckAuthToken();
+                    int num = await this.PutObject(url, payload, --retries);
+                    return num;
+                }
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+            return 0;
+        }
+
+        #endregion
     }
 }

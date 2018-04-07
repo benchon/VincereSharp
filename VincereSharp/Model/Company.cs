@@ -23,7 +23,7 @@
         public int[] CompanyOwners { get; set; }
 
         [JsonProperty("contact_in_company")]
-        public long ContactInCompany { get; set; }
+        public int? ContactInCompany { get; set; }
 
         [JsonProperty("creator_id")]
         public int? CreatorId { get; set; }

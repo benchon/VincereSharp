@@ -20,13 +20,13 @@ namespace VincereSharp
         public string District { get; set; }
 
         [JsonProperty("latitude")]
-        public long Latitude { get; set; }
+        public int? Latitude { get; set; }
 
         [JsonProperty("location_name")]
         public string LocationName { get; set; }
 
         [JsonProperty("longitude")]
-        public long Longitude { get; set; }
+        public int? Longitude { get; set; }
 
         [JsonProperty("nearest_train_station")]
         public string NearestTrainStation { get; set; }
