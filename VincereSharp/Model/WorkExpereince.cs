@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace VincereSharp
 {
@@ -17,21 +18,21 @@ namespace VincereSharp
         public string ExperienceInCompany { get; set; }
 
         [JsonProperty("functional_expertise_id")]
-        public long FunctionalExpertiseId { get; set; }
+        public int? FunctionalExpertiseId { get; set; }
 
         [JsonProperty("industry_id")]
-        public long IndustryId { get; set; }
+        public int? IndustryId { get; set; }
 
         [JsonProperty("job_title")]
         public string JobTitle { get; set; }
 
         [JsonProperty("sub_function_id")]
-        public long SubFunctionId { get; set; }
+        public int? SubFunctionId { get; set; }
 
         [JsonProperty("work_from")]
-        public System.DateTimeOffset WorkFrom { get; set; }
+        public DateTime WorkFrom { get; set; }
 
         [JsonProperty("work_to")]
-        public System.DateTimeOffset WorkTo { get; set; }
+        public DateTime WorkTo { get; set; }
     }
 }

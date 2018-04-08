@@ -642,6 +642,11 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<int> CreateCompanysLocations(int id, Address[] address)
+        {
+            var locations = new {locations = address };
+            return await this.PutObject($"/api/v2/company/{ id }/locations", this.BuildRequestContent(locations));
+        }
         #endregion
 
         #region "Jobs"
