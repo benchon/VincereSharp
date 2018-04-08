@@ -5,7 +5,7 @@ namespace VincereSharp
     public partial class Address
     {
         [JsonProperty("address")]
-        public string AddressAddress { get; set; }
+        public string Street { get; set; }
 
         [JsonProperty("city")]
         public string City { get; set; }
@@ -37,4 +37,5 @@ namespace VincereSharp
         [JsonProperty("state")]
         public string State { get; set; }
     } 
+
 }
