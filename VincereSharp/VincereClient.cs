@@ -180,7 +180,7 @@ namespace VincereSharp
             if (string.IsNullOrWhiteSpace(IdToken))
             {
                 if (string.IsNullOrWhiteSpace(RefresherToken))
-                    throw new AuthenticationException("Initial login required to generate refresh token");
+                    throw new VincereSharpException("Initial login required to generate refresh token");
 
                 await this.GetRefreshToken();
             }
@@ -242,7 +242,7 @@ namespace VincereSharp
         public async Task<int> AddCandidateAsync(Candidate item)
         {
             if (item == null)
-                throw new NullReferenceException("Candidate is null");
+                throw new VincereSharpException("Candidate is null");
 
             await CheckAuthToken();
 
@@ -449,6 +449,8 @@ namespace VincereSharp
 
         public async Task<Contact> GetContactAsync(int id, int retry = 2)
         {
+            await CheckAuthToken();
+
             try
             {
                 var json = await Client.GetStringAsync($"/api/v2/contact/{id}");
@@ -460,7 +462,6 @@ namespace VincereSharp
                 Console.WriteLine(ex);
                 if (retry <= 0) throw;
 
-                await this.GetRefreshToken(this.RefresherToken);
                 return await this.GetContactAsync(id, --retry);
             }
         }
@@ -468,23 +469,23 @@ namespace VincereSharp
         public async Task<int> AddContactAsync(Contact item)
         {
             if (item == null)
-                throw new NullReferenceException("Contact is null");
+                throw new VincereSharpException("Contact is null");
 
             await CheckAuthToken();
 
-            try
+            var response = await Client.PostAsync("/api/v2/contact", BuildRequestContent(item));
+            var json = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
             {
-                var response = await Client.PostAsync("/api/v2/contact", BuildRequestContent(item));
-                var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
             }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                await this.GetRefreshToken(this.RefresherToken);
-                return await this.AddContactAsync(item);
-            }
+
+            var error = JsonConvert.DeserializeObject<ResponseError>(json);
+            throw new VincereSharpException(response.ReasonPhrase, new Exception() { Source = error.Errors.FirstOrDefault() } );
+
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> UpdateContactAsync(Contact item, int id)
@@ -492,6 +493,9 @@ namespace VincereSharp
             if (id <= 0)
                 return false;
 
+            await CheckAuthToken();
+
+        
             try
             {
                 var response = await Client.PutAsync($"/api/v2/contact/{id}", BuildRequestContent(item));
@@ -501,7 +505,6 @@ namespace VincereSharp
             catch (HttpRequestException ex)
             {
                 Console.WriteLine(ex);
-                await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateContactAsync(item, id);
             }
 
@@ -592,7 +595,7 @@ namespace VincereSharp
         public async Task<int> AddCompanyAsync(Company item)
         {
             if (item == null)
-                throw new NullReferenceException("Company is null");
+                throw new VincereSharpException("Company is null");
 
             await CheckAuthToken();
 
@@ -607,7 +610,7 @@ namespace VincereSharp
             if (response.StatusCode == HttpStatusCode.BadRequest)
             {
                 var error = JsonConvert.DeserializeObject<ResponseError>(json);
-                throw new Exception(response.ReasonPhrase) { InnerException = { Source = error.Errors.FirstOrDefault() } };
+                throw new VincereSharpException(response.ReasonPhrase) { InnerException = { Source = error.Errors.FirstOrDefault() } };
             }
 
             response.EnsureSuccessStatusCode();
@@ -704,7 +707,7 @@ namespace VincereSharp
         public async Task<int> AddJobAsync(Job item)
         {
             if (item == null)
-                throw new NullReferenceException("Job is null");
+                throw new VincereSharpException("Job is null");
 
             await CheckAuthToken();
 
