@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -174,7 +175,7 @@ namespace VincereSharp
             this.RefresherToken = tokenResponse.RefreshToken;
         }
 
-        private async Task CheckAuthToken()
+        public async Task CheckAuthToken()
         {
             if (string.IsNullOrWhiteSpace(IdToken))
             {
@@ -595,19 +596,23 @@ namespace VincereSharp
 
             await CheckAuthToken();
 
-            try
-            {
-                var response = await Client.PostAsync("/api/v2/company", BuildRequestContent(item));
-                var json = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+            var response = await Client.PostAsync("/api/v2/company", BuildRequestContent(item));
+            var json = await response.Content.ReadAsStringAsync();
 
+            if (response.IsSuccessStatusCode)
+            {
                 return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
             }
-            catch (HttpRequestException ex)
+
+            if (response.StatusCode == HttpStatusCode.BadRequest)
             {
-                Console.WriteLine(ex);
-                await this.GetRefreshToken(this.RefresherToken);
-                return await this.AddCompanyAsync(item);
+                var error = JsonConvert.DeserializeObject<ResponseError>(json);
+                throw new Exception(response.ReasonPhrase) { InnerException = { Source = error.Errors.FirstOrDefault() } };
             }
+
+            response.EnsureSuccessStatusCode();
+
+            return await this.AddCompanyAsync(item);
         }
 
         public async Task<bool> UpdateCompanyAsync(Contact item, int id)
@@ -644,7 +649,7 @@ namespace VincereSharp
 
         public async Task<int> CreateCompanysLocations(int id, Address[] address)
         {
-            var locations = new {locations = address };
+            var locations = new { locations = address };
             return await this.PutObject($"/api/v2/company/{ id }/locations", this.BuildRequestContent(locations));
         }
         #endregion
