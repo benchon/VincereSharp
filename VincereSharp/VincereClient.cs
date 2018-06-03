@@ -610,7 +610,8 @@ namespace VincereSharp
             if (response.StatusCode == HttpStatusCode.BadRequest)
             {
                 var error = JsonConvert.DeserializeObject<ResponseError>(json);
-                throw new VincereSharpException(response.ReasonPhrase) { InnerException = { Source = error.Errors.FirstOrDefault() } };
+                var e = error.Errors.Any() ? error.Errors.FirstOrDefault() : response.ReasonPhrase;
+                throw new VincereSharpException(e);
             }
 
             response.EnsureSuccessStatusCode();
