@@ -919,6 +919,39 @@ namespace VincereSharp
             return 0;
         }
 
+        #region "HttpCient Methods"
+
+        private async Task<int> PutObject(string url, StringContent payload, int retries = 3)
+        {
+            await this.CheckAuthToken();
+            try
+            {
+                var response = await this.Client.PutAsync(url, (HttpContent)payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ObjectCreatedResponse>(json).id;
+                }
+                if (response.StatusCode == HttpStatusCode.Forbidden &&
+                    response.ReasonPhrase == "Unauthorized" &&
+                    retries > 0)
+                {
+                    this.IdToken = string.Empty;
+                    await this.CheckAuthToken();
+                    int num = await this.PutObject(url, payload, --retries);
+                    return num;
+                }
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+            return 0;
+        }
+
         #endregion "HttpCient Methods"
     }
 }
