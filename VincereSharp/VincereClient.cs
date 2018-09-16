@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace VincereSharp
 {
@@ -33,6 +32,7 @@ namespace VincereSharp
         }
 
         private VincereConfig _config;
+
         public VincereConfig Config
         {
             get => _config ?? (_config = new VincereConfig());
@@ -42,6 +42,7 @@ namespace VincereSharp
         #region "Http"
 
         private HttpClient _client;
+
         private HttpClient Client
         {
             get
@@ -83,9 +84,10 @@ namespace VincereSharp
                 "application/json");
         }
 
-        #endregion
+        #endregion "Http"
 
         #region "Auth"
+
         public string GetLoginUrl(string redirectUrl)
         {
             return GetLoginUrl(Config.ClientId, redirectUrl);
@@ -135,7 +137,6 @@ namespace VincereSharp
             return tokenResponse;
         }
 
-
         public async Task<TokenResponse> GetRefreshToken()
         {
             return await GetRefreshToken(this.RefresherToken);
@@ -165,7 +166,6 @@ namespace VincereSharp
             var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(json);
             this.SetTokenResponse(tokenResponse);
             return tokenResponse;
-
         }
 
         private void SetTokenResponse(TokenResponse tokenResponse)
@@ -179,13 +179,13 @@ namespace VincereSharp
             if (string.IsNullOrWhiteSpace(IdToken))
             {
                 if (string.IsNullOrWhiteSpace(RefresherToken))
-                    throw new AuthenticationException("Initial login required to generate refresh token");
+                    throw new Exception("Initial login required to generate refresh token");
 
                 await this.GetRefreshToken();
             }
         }
 
-        #endregion
+        #endregion "Auth"
 
         #region "Candidates"
 
@@ -290,7 +290,6 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateCandidateAsync(item, id);
             }
-
         }
 
         public async Task<bool> DeleteCandidateAsync(int id, string reason)
@@ -380,7 +379,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertises", 
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertises",
                                                                 BuildRequestContent(expertiseIds));
                 if (response.IsSuccessStatusCode)
                 {
@@ -405,7 +404,7 @@ namespace VincereSharp
 
             try
             {
-                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertise/{ functionalExpertiseId }/subfunctionalexpertises", 
+                var response = await Client.PutAsync($"/api/v2/candidate/{ id }/functionalexpertise/{ functionalExpertiseId }/subfunctionalexpertises",
                                                                 BuildRequestContent(subFuncExpertiseIds));
                 if (response.IsSuccessStatusCode)
                 {
@@ -447,7 +446,7 @@ namespace VincereSharp
 
             return 0;
         }
-        
+
         public async Task<int> PutCandidatePersonalLocation(int id, Address address)
         {
             await CheckAuthToken();
@@ -472,7 +471,7 @@ namespace VincereSharp
             return 0;
         }
 
-        #endregion
+        #endregion "Candidates"
 
         #region "Contact"
 
@@ -560,7 +559,6 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateContactAsync(item, id);
             }
-
         }
 
         public async Task<bool> DeleteContactAsync(int id)
@@ -575,7 +573,7 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        #endregion
+        #endregion "Contact"
 
         #region "Companies"
 
@@ -592,11 +590,11 @@ namespace VincereSharp
             if (!string.IsNullOrWhiteSpace(companyName))
                 searchVariables.Add("name", companyName);
 
-            if (searchVariables.Count>0)
+            if (searchVariables.Count > 0)
             {
                 searchUrl += $"?q=";
-           
-                int count = 1;               
+
+                int count = 1;
                 foreach (var keyValuePair in searchVariables)
                 {
                     searchUrl += $"{keyValuePair.Key}:{keyValuePair.Value}";
@@ -608,7 +606,7 @@ namespace VincereSharp
                     count++;
                 }
             }
-            
+
             try
             {
                 var json = await Client.GetStringAsync(searchUrl);
@@ -684,7 +682,6 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateCompanyAsync(item, id);
             }
-
         }
 
         public async Task<bool> DeleteCompanyAsync(int id)
@@ -699,7 +696,7 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-        #endregion
+        #endregion "Companies"
 
         #region "Jobs"
 
@@ -787,7 +784,6 @@ namespace VincereSharp
                 await this.GetRefreshToken(this.RefresherToken);
                 return await this.UpdateJobAsync(item, id);
             }
-
         }
 
         public async Task<bool> DeleteJobAsync(int id)
@@ -802,13 +798,9 @@ namespace VincereSharp
             return response.IsSuccessStatusCode;
         }
 
-
-        #endregion
-
-        #region  "Applications"
+        #endregion "Jobs"
 
 
-        #endregion
 
         #region "Files"
 
@@ -874,27 +866,9 @@ namespace VincereSharp
             return null;
         }
 
-
-        #endregion
-
-        #region "Activities"
+        #endregion "Files"
 
 
-        #endregion
-
-        #region "User"
-
-
-        #endregion
-
-        #region "Search"
-
-
-        #endregion
-
-        #region "Reports
-
-        #endregion
 
         #region "References"
 
@@ -958,7 +932,6 @@ namespace VincereSharp
             return respObj;
         }
 
-        #endregion
-
+        #endregion "References"
     }
 }

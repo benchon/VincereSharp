@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTest", "WebTest\WebTest.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VincereSharp.Tests", "VincereSharp.Tests\VincereSharp.Tests.csproj", "{A6DA6064-EC52-4A9C-928D-28C674F6E81F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VincereSharp.Tests.Framework471", "VincereSharp.Tests.Framework471\VincereSharp.Tests.Framework471.csproj", "{D50400DF-BB83-463C-8F6A-7ABCB01E1265}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{A6DA6064-EC52-4A9C-928D-28C674F6E81F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6DA6064-EC52-4A9C-928D-28C674F6E81F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6DA6064-EC52-4A9C-928D-28C674F6E81F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D50400DF-BB83-463C-8F6A-7ABCB01E1265}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D50400DF-BB83-463C-8F6A-7ABCB01E1265}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D50400DF-BB83-463C-8F6A-7ABCB01E1265}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D50400DF-BB83-463C-8F6A-7ABCB01E1265}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
