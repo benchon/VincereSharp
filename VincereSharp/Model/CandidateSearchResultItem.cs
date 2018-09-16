@@ -14,6 +14,6 @@ namespace VincereSharp
         public string CurrentJobTitle { get; set; }
 
         [JsonProperty("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
     }
 }

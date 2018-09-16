@@ -8,7 +8,7 @@ namespace VincereSharp
         public string FileName { get; set; }
 
         [JsonProperty("document_type_id")]
-        public long DocumentTypeId { get; set; }
+        public int DocumentTypeId { get; set; }
 
         [JsonProperty("url")]
         public string Url { get; set; }

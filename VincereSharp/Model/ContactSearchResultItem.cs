@@ -11,7 +11,7 @@ namespace VincereSharp
         public Company Company { get; set; }
 
         [JsonProperty("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         [JsonProperty("note")]
         public string Note { get; set; }

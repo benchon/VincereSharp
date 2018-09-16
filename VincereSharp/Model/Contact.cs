@@ -9,19 +9,19 @@
         public int? Id { get; set; }
 
         [JsonProperty("candidate_source_id")]
-        public long? CandidateSourceId { get; set; }
+        public int? CandidateSourceId { get; set; }
 
         [JsonProperty("company_id")]
-        public long? CompanyId { get; set; }
+        public int? CompanyId { get; set; }
 
         [JsonProperty("contact_owners")]
         public string[] ContactOwners { get; set; }
 
         [JsonProperty("creator_id")]
-        public long? CreatorId { get; set; }
+        public int? CreatorId { get; set; }
 
         [JsonProperty("customer_probability")]
-        public long? CustomerProbability { get; set; }
+        public int? CustomerProbability { get; set; }
 
         [JsonProperty("date_of_birth")]
         public DateTime? DateOfBirth { get; set; }
@@ -57,7 +57,7 @@
         public string JobLevel { get; set; }
 
         [JsonProperty("job_level_hierarchy")]
-        public long? JobLevelHierarchy { get; set; }
+        public int? JobLevelHierarchy { get; set; }
 
         [JsonProperty("job_title")]
         public string JobTitle { get; set; }
@@ -105,7 +105,7 @@
         public DateTime? RegistrationDate { get; set; }
 
         [JsonProperty("report_to_contact_id")]
-        public long? ReportToContactId { get; set; }
+        public int? ReportToContactId { get; set; }
 
         [JsonProperty("skills")]
         public string Skills { get; set; }

@@ -17,7 +17,7 @@
         public string TokenType { get; set; }
 
         [JsonProperty("expires_in")]
-        public long ExpiresIn { get; set; }
+        public int ExpiresIn { get; set; }
     }
 
 }
