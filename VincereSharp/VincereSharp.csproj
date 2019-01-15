@@ -7,7 +7,6 @@
     <Authors>Wayne Thompson</Authors>
     <RepositoryUrl>https://github.com/benchon/VincereSharp</RepositoryUrl>
     <Description>An unofficial cross platform Vincere api sdk written in C# and .net netcore.</Description>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/benchon/VincereSharp/master/LICENSE</PackageLicenseUrl>
     <Copyright>BenchOn pty ltd</Copyright>
   </PropertyGroup>
 

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using VincereSharp.Model;
 
 namespace VincereSharp
 {
@@ -60,7 +61,7 @@ namespace VincereSharp
             }
         }
 
-        private JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
+        private readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
             DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.'000Z'"
@@ -482,8 +483,6 @@ namespace VincereSharp
 
             var error = JsonConvert.DeserializeObject<ResponseError>(json);
             throw new VincereSharpException(response.ReasonPhrase, new Exception() { Source = error.Errors.FirstOrDefault() });
-
-            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> UpdateContactAsync(Contact item, int id)
@@ -784,7 +783,7 @@ namespace VincereSharp
             }
         }
 
-        public async Task<Candidate> ParseResumeAsync(string resumeUrl)
+        public async Task<ParsedResumeCandidate> ParseResumeAsync(string resumeUrl)
         {
             await CheckAuthToken();
 
@@ -800,7 +799,7 @@ namespace VincereSharp
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<Candidate>(json);
+                    return JsonConvert.DeserializeObject<ParsedResumeCandidate>(json);
                 }
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
