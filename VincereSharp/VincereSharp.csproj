@@ -1,17 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>0.0.1-beta</Version>
     <Authors>Wayne Thompson</Authors>
     <RepositoryUrl>https://github.com/benchon/VincereSharp</RepositoryUrl>
     <Description>An unofficial cross platform Vincere api sdk written in C# and .net netcore.</Description>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/benchon/VincereSharp/master/LICENSE</PackageLicenseUrl>
     <Copyright>BenchOn pty ltd</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 
   <!-- .NET Standard 2.0 references, compilation flags and build options -->

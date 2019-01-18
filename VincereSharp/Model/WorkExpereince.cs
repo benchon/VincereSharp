@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace VincereSharp
 {
@@ -12,7 +12,7 @@ namespace VincereSharp
         public string CompanyName { get; set; }
 
         [JsonProperty("current_employer")]
-        public bool? CurrentEmployer { get; set; }
+        public bool CurrentEmployer { get; set; }
 
         [JsonProperty("experience_in_company")]
         public string ExperienceInCompany { get; set; }
@@ -30,9 +30,9 @@ namespace VincereSharp
         public int? SubFunctionId { get; set; }
 
         [JsonProperty("work_from")]
-        public DateTime? WorkFrom { get; set; }
+        public DateTime WorkFrom { get; set; }
 
         [JsonProperty("work_to")]
-        public DateTime? WorkTo { get; set; }
+        public DateTime WorkTo { get; set; }
     }
 }
