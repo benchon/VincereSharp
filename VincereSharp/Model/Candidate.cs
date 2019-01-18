@@ -1,5 +1,5 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace VincereSharp
 {
@@ -36,22 +36,22 @@ namespace VincereSharp
         public string CurrencyType { get; set; }
 
         [JsonProperty("current_bonus")]
-        public double CurrentBonus { get; set; }
+        public double? CurrentBonus { get; set; }
 
         [JsonProperty("current_salary")]
-        public double CurrentSalary { get; set; }
+        public double? CurrentSalary { get; set; }
 
         [JsonProperty("date_of_birth")]
         public DateTime? DateOfBirth { get; set; }
 
         [JsonProperty("desired_bonus")]
-        public double DesiredBonus { get; set; }
+        public double? DesiredBonus { get; set; }
 
         [JsonProperty("desired_contract_rate")]
         public int? DesiredContractRate { get; set; }
 
         [JsonProperty("desired_salary")]
-        public double DesiredSalary { get; set; }
+        public double? DesiredSalary { get; set; }
 
         [JsonProperty("driving_license_number")]
         public string DrivingLicenseNumber { get; set; }
@@ -177,7 +177,7 @@ namespace VincereSharp
         public string PreferredLanguage { get; set; }
 
         [JsonProperty("present_salary_rate")]
-        public double PresentSalaryRate { get; set; }
+        public double? PresentSalaryRate { get; set; }
 
         [JsonProperty("publications")]
         public string Publications { get; set; }
@@ -264,7 +264,6 @@ namespace VincereSharp
 
             if (RegistrationDate == null)
                 throw new NullReferenceException("Registration Date is required");
-
         }
     }
 
